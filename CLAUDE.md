@@ -9,12 +9,10 @@ An assistant supporting a real estate agent. Someone running property sales from
 a spare room. Not an analyst, not an appraiser, not a fund.
 
 If a change only makes sense to somebody with a finance background, it does not
-belong here. This tool was already built the wrong way once. The first version
-was an institutional appraisal platform of 3,407 lines with four valuation
-approaches, California Proposition 13 reassessment and a statistical reliability
-grade. It worked and all ten of its internal arithmetic checks passed. It was
-discarded anyway, because it had been built for the wrong person. Scoping
-questions expand scope. They do not establish who will sit in front of the thing.
+belong here. An earlier version of this tool was an institutional appraisal
+platform of 3,407 lines, with four valuation approaches, California Proposition
+13 reassessment and a statistical reliability grade. It was replaced with the
+current one because the audience is an agent's assistant, not an analyst.
 
 ## Two rules that override everything else
 
@@ -25,16 +23,15 @@ That means subject property, comparable sales, adjustments, elements of
 comparison, indicated value, market conditions, condition and gross adjustment.
 An agent's assistant reads these terms every working day.
 
-There are two ways to get this wrong and this project has managed both.
+There are two ways to get this wrong.
 
 The first is consultant filler. Phrases such as dispersion band, reconcile the
 indications, gross adjustment burden and ingest. These add ceremony rather than
 meaning.
 
 The second is writing down to the reader. Using Shape in place of condition,
-nudge in place of adjustment, How we got there in place of the adjustment detail.
-This is its own form of disrespect and it produces output that cannot be handed
-to a client.
+nudge in place of adjustment, or How we got there in place of the adjustment
+detail. That produces output which cannot be handed to a client.
 
 | Wrong in either direction | Correct |
 |---|---|
@@ -134,8 +131,8 @@ One bug here is worth remembering. Matching used indexOf compared against index
 arithmetic, and when indexOf returned -1 for "not found" the arithmetic sometimes
 also produced -1, so the comparison passed. Every heading matched every synonym
 of the same character length, which is how Submarket came to be read as the lot
-size, both being nine characters. It was found by checking what each column
-mapped to, not by checking that nothing threw an error. Test the mapping.
+size, both being nine characters. Test what each column maps to, not simply that
+nothing throws an error.
 
 Measured against the files in samples:
 
@@ -215,12 +212,12 @@ caught a real bug.
 Loop through all six types calling switchClass(k) then loadExample() and confirm
 each produces a different and sensible value. Stub window.confirm to return true
 first, because switchClass asks before clearing and a headless confirm returns
-false, so every type silently remains residential and every result looks
-identical. That is exactly what happened.
+false, which leaves every type on residential and makes every result look
+identical.
 
 Confirm that the scrollWidth of .sheet is less than or equal to the clientWidth
-of its .scroll container at 1280 pixels wide. The table once overflowed by 196
-pixels and hid two columns off screen.
+of its .scroll container at 1280 pixels wide. An overflow here hides columns off
+screen.
 
 Type into a row and confirm that document.activeElement has not changed.
 refresh() must never rebuild the rows, because the cursor then jumps out mid
@@ -263,7 +260,7 @@ Write them the way the owner writes them. One line, starting with the date, then
 plainly what was done, joined with commas and "and".
 
     July 16, worked through exercises 1 through 4 in arrays and completed all housekeeping
-    August 13, gitignored commands.md and corrected a decision claude made on my behalf
+    August 13, gitignored commands.md and updated decisions
 
 Lower case after the date. No title case, no colons splitting a subject from a
 description, no semicolons, and no multi paragraph body explaining the reasoning.
