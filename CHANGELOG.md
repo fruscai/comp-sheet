@@ -33,13 +33,21 @@
 - Project docs: `CLAUDE.md`, `DECISIONS.md`, this file.
 
 ### Fixed
+- **The sales table no longer starts with empty rows.** It opens saying "No
+  sales yet" and rows appear only when you bring in a file or press Add.
+- **"How we got there" no longer fills up with cards that explain nothing.**
+  When your own boxes weren't filled in yet, every sale produced a card reading
+  "Not counted — need the square feet of yours first". Those cards exist to show
+  the arithmetic, so when there is no arithmetic there is now no card, and the
+  heading stays hidden.
+- **Switching property kind wiped your property's boxes** while keeping the
+  sales' values, so every sale reported that it couldn't be used. Anything the
+  new kind still has a box for now carries across, the same way the sales do.
 - **Column matching fired on unrelated headings.** A `-1` returned by `indexOf`
   for "not found" was being compared against arithmetic that also produced `-1`,
   so any heading the same length as a known name matched it. `Submarket` was
   being read as the lot size, because both "Submarket" and "land area" are nine
   characters long. Replaced with a real word-boundary test.
-- **The table started with three empty rows** and padded back to three whenever
-  work was reloaded. It now starts with one and importing clears the empties.
 - **The sales table hid two columns.** It ran 1,210px wide inside 1,014px of
   space, pushing the condition dropdown and the delete button off the right edge
   on an ordinary laptop. Column headers now wrap to two lines so the columns can

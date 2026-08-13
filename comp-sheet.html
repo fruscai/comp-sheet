@@ -106,8 +106,6 @@ button.tiny:hover{color:var(--red);background:none}
 .why li .amt.down{color:var(--red)}
 .why .end{display:flex;justify-content:space-between;gap:14px;margin-top:10px;padding-top:10px;
   border-top:2px solid var(--line);font-weight:700;font-size:15.5px}
-.why.skip{background:#fafbfd}
-.why.skip h3{color:var(--ink-faint)}
 
 .pill{display:inline-block;background:var(--line-soft);color:var(--ink-soft);
   padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600}
@@ -138,6 +136,7 @@ details > .body{padding:0 20px 20px}
 .tiny{font-size:13px;color:var(--ink-faint)}
 .dropbox .tiny{margin-top:5px}
 
+.nothingyet{color:var(--ink-faint);font-size:14px;padding:18px 4px;text-align:center}
 .found{font-size:13px;color:var(--green);font-weight:600}
 .found.miss{color:var(--ink-faint);font-weight:500}
 .eg{display:block;font-size:12.5px;color:var(--ink-faint);max-width:220px;overflow:hidden;
@@ -712,6 +711,15 @@ function switchClass(k) {
   if (k === className) return;
   if (hasAnything() && !confirm('Switch to ' + CLASSES[k].label +
       '?\n\nThe boxes change, so anything that does not carry over will be cleared.')) return;
+  /* Hold on to what's in your property's boxes. The sales keep theirs,
+     so yours must too — otherwise the boxes empty out and every sale
+     reports that it can't be used. */
+  var kept = { addr: $('#j_addr').value };
+  cls().fields.forEach(function (f) {
+    var box = $('#j_' + f.key);
+    if (box) kept[f.key] = box.value;
+  });
+
   className = k;
   rates = startingRates();
   comps = comps.map(function (old) {
@@ -721,8 +729,14 @@ function switchClass(k) {
     cls().fields.forEach(function (f) { if (old[f.key] != null) c[f.key] = old[f.key]; });
     return c;
   });
-  if (!comps.length) comps.push(blankComp());
-  drawKinds(); drawSubject(); drawHead(); drawRows(); drawRates(); refresh();
+  drawKinds(); drawSubject(); drawHead(); drawRows(); drawRates();
+
+  $('#j_addr').value = kept.addr || '';
+  cls().fields.forEach(function (f) {
+    var box = $('#j_' + f.key);
+    if (box && kept[f.key]) box.value = kept[f.key];
+  });
+  refresh();
 }
 
 /* ── the property's own boxes ── */
@@ -771,6 +785,18 @@ function drawHead() {
 function drawRows() {
   var body = $('#rows');
   body.innerHTML = '';
+
+  /* Nothing added yet. Say so once, rather than showing empty boxes that
+     look like they're waiting to be filled. */
+  if (!comps.length) {
+    var span = cls().fields.length + 4;
+    body.appendChild(el('tr', {}, [el('td', { colspan: span, class: 'nothingyet' },
+      ['No sales yet. Bring them in from a file, or add one and type it in.'])]));
+    $('#btnAdd').textContent = '+ Add a sale by hand';
+    return;
+  }
+  $('#btnAdd').textContent = '+ Add another sale';
+
   comps.forEach(function (c) {
     function box(key, width, ph, isText) {
       return el('input', {
@@ -866,18 +892,17 @@ function drawWhy(r) {
   host.innerHTML = '';
   if (!comps.length) return;
 
+  /* Only sales we actually worked out get a card. A sale we couldn't touch
+     because your own boxes aren't filled in yet has nothing to explain —
+     the banner at the top already says what's missing. */
+  var worked = r.results.filter(function (res) { return !res.skip; });
+  if (!worked.length) return;
+
   host.appendChild(el('h2', { style: 'font-size:18px;margin:22px 0 12px' , text: 'How we got there' }));
 
-  r.results.forEach(function (res) {
+  worked.forEach(function (res) {
     var c = res.comp;
     var name = c.addr || 'That sale';
-    if (res.skip) {
-      host.appendChild(el('div', { class: 'why skip' }, [
-        el('h3', { text: name }),
-        el('p', { class: 'head', text: 'Not counted — ' + res.skip })
-      ]));
-      return;
-    }
     var card = el('div', { class: 'why' });
     card.appendChild(el('h3', {}, [
       name, ' ',
@@ -1172,7 +1197,6 @@ function takeImport() {
   /* Clear out any rows still sitting empty, so the table isn't padded
      with blanks after an import. */
   comps = comps.filter(function (c) { return c.addr || c.price; });
-  if (!comps.length) comps.push(blankComp());
 
   pending = null;
   return { added: added, skipped: skipped };
@@ -1305,7 +1329,6 @@ function restore(data) {
     cls().fields.forEach(function (f) { if (raw[f.key] != null) c[f.key] = raw[f.key]; });
     return c;
   });
-  if (!comps.length) comps.push(blankComp());
   drawRows(); drawRates(); refresh();
   return true;
 }
@@ -1420,7 +1443,6 @@ function start() {
   drawKinds();
   drawSubject();
   drawHead();
-  comps.push(blankComp());
   drawRows();
   drawRates();
 
@@ -1450,7 +1472,7 @@ function start() {
     if (!confirm('Clear everything and start over?\n\nAnything this computer remembered will be forgotten too.')) return;
     $('#j_addr').value = '';
     drawSubject();
-    comps = [blankComp()];
+    comps = [];
     forget();
     $('#reopened').hidden = true;
     $('#saveLine').innerHTML = '';
