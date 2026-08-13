@@ -185,7 +185,35 @@ scroll sideways — see the rough edges in [CLAUDE.md](CLAUDE.md).
 
 ---
 
-## 11. Files live in Downloads
+## 11. Importing shows its guess before it acts
+
+Files can be dropped in any column order. The heading row is read and each
+column matched to a box, then **every** column is shown back — its heading, a
+real value from the file, and what we made of it — with a dropdown to correct
+anything wrong. Nothing is added until the user agrees.
+
+The alternative was demanding a fixed column order, which is what the first
+paste feature did. It's less code and it's useless: nobody rearranges a CoStar
+export before importing it, they just give up.
+
+Showing the guess also handles the honest problem, which is that the list of
+heading names (`SYNONYMS`) is assembled from what these exports *probably* call
+things. It has never been checked against every real export. A wrong guess is
+therefore expected, and the interface is built around correcting one in two
+seconds rather than around being right every time.
+
+A bug worth remembering: matching originally used `indexOf` compared against
+index arithmetic, and when `indexOf` returned `-1` for "not found" the
+arithmetic sometimes also produced `-1`, so the comparison passed. Every heading
+matched every synonym of the same character length — `Submarket` was read as the
+lot size because "land area" is also nine characters. Found by importing a file
+with deliberately awkward headings and checking *what each column matched to*
+rather than just that nothing crashed. Test for the mapping, not for the absence
+of an exception.
+
+---
+
+## 12. Files live in Downloads
 
 Deliverables go straight to `~/Downloads`, not into a new folder in the home
 directory. Downloads is where this user actually looks. The one exception is

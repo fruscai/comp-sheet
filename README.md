@@ -34,6 +34,23 @@ Then it shows its work in plain sentences, one card per sale:
 > Yours is 2 years older — **−$1,400**
 > Which points to **$676,848**
 
+## Bringing in sales from a file
+
+Drop a CoStar export, an MLS download, or anything saved out of Excel. The
+columns can be in any order, and extra columns are ignored.
+
+It reads the heading row and works out which column is which, then shows you
+every column with a real value beside it and what it thinks that column is. Fix
+anything it got wrong from a dropdown, then add them. Nothing is brought in
+until you've looked.
+
+Acres are converted to square feet, conditions written as words are read as the
+1–5 scale, and rows without a sale price are left out and counted.
+
+The heading names it recognises are a list in the file (`SYNONYMS`) — if your
+export uses something it doesn't know, either fix that one column in the review
+step or add the name to the list.
+
 ## Six kinds of property
 
 Pick one and the boxes change to match.

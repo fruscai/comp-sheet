@@ -84,6 +84,19 @@ and paste instructions all build themselves from it.
 `EXAMPLES[kind].mine` and each sale's array must be **in the same order as
 `fields`** — they're matched by index.
 
+### Teaching it a new column heading
+
+`SYNONYMS` maps a box to the heading names real exports use. Add freely — a name
+that never turns up costs nothing.
+
+Matching is exact (100) → whole words (80) → any substring (62), with a small
+bonus for longer names so `Lot Size` beats a bare `Lot`. Then columns are
+assigned strongest-first, one column per box.
+
+Be careful with short names. `lot`, `sf` and `rent` will match inside longer
+headings. There was already one bug here where every nine-character heading
+matched every nine-character synonym — see DECISIONS.md.
+
 ### Adding a field to an existing kind
 
 Add one `F(...)` line and a starting amount in that kind's `rates`. If it needs
@@ -116,6 +129,10 @@ have caught real bugs:
   must never rebuild `#rows`, or the cursor jumps out mid-word.
 - Save, switch kinds, restore, and confirm the property kind and all fields come
   back.
+- Import a file whose headings are deliberately awkward — extra columns, a
+  `Submarket` column, acres instead of square feet, conditions as words, an
+  address with a comma in it, and a row with no price. Check what each column
+  matched to, not just that it didn't crash.
 
 ## Things that look like improvements and are not
 

@@ -131,6 +131,18 @@ details > .body{padding:0 20px 20px}
 .saveline b{color:var(--green);font-weight:600}
 .saveline button{padding:0;font-size:13.5px}
 
+.dropbox{border:2px dashed var(--line);border-radius:var(--r);padding:24px 18px;text-align:center;
+  background:#fbfcfe;transition:border-color .15s,background .15s}
+.dropbox.over{border-color:var(--blue);background:var(--blue-soft)}
+.dropbox p{margin:0}
+.tiny{font-size:13px;color:var(--ink-faint)}
+.dropbox .tiny{margin-top:5px}
+
+.found{font-size:13px;color:var(--green);font-weight:600}
+.found.miss{color:var(--ink-faint);font-weight:500}
+.eg{display:block;font-size:12.5px;color:var(--ink-faint);max-width:220px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+
 .kinds{display:flex;gap:8px;flex-wrap:wrap}
 .kinds button{padding:9px 16px;border-radius:999px;font-weight:600;color:var(--ink-soft)}
 .kinds button.on{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -191,16 +203,35 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
 </div>
 <p class="saveline noprint" id="saveLine"></p>
 
-<!-- PASTE -->
+<!-- IMPORT -->
 <div class="card noprint" id="pasteCard" hidden>
-  <h2>Paste from a spreadsheet</h2>
-  <p class="hint">Copy the rows out of Excel or your MLS export and paste them here. Put the columns in
-    this order, one sale per line. A heading row is fine — it gets skipped.</p>
-  <p class="hint"><strong id="pasteOrder"></strong></p>
-  <textarea id="pasteBox" placeholder="124 Oak Street	685000	3/14/2025	1980	3	2	1	1998	2	7200"></textarea>
+  <h2>Bring in sales from a file</h2>
+  <p class="hint">A CoStar export, an MLS download, or anything out of Excel. Drop the file below or
+    paste the rows — the columns can be in any order and extra columns are ignored. You'll see what
+    we made of it before anything is added.</p>
+
+  <div class="dropbox" id="dropbox">
+    <p><strong>Drop a CSV or Excel-exported file here</strong></p>
+    <p class="tiny">or <button class="link" id="btnBrowse">choose a file</button> · or paste below</p>
+    <input type="file" id="fileBox" accept=".csv,.tsv,.txt" hidden />
+  </div>
+
+  <textarea id="pasteBox" style="margin-top:12px" placeholder="Paste rows here, including the heading row"></textarea>
   <div class="row" style="margin-top:10px">
-    <button class="primary" id="btnPasteGo">Add these sales</button>
+    <button class="primary" id="btnPasteGo">Read this</button>
     <button id="btnPasteCancel">Cancel</button>
+  </div>
+</div>
+
+<!-- WHAT WE FOUND -->
+<div class="card noprint" id="reviewCard" hidden>
+  <h2>Check we read it right</h2>
+  <p class="hint" id="reviewCount"></p>
+  <div class="scroll"><table class="sheet" id="reviewTable"></table></div>
+  <div class="row" style="margin-top:14px">
+    <button class="primary" id="btnImportGo">Add these sales</button>
+    <button id="btnImportCancel">Cancel</button>
+    <span class="tiny" id="reviewWarn"></span>
   </div>
 </div>
 
@@ -690,7 +721,7 @@ function switchClass(k) {
     cls().fields.forEach(function (f) { if (old[f.key] != null) c[f.key] = old[f.key]; });
     return c;
   });
-  while (comps.length < 3) comps.push(blankComp());
+  if (!comps.length) comps.push(blankComp());
   drawKinds(); drawSubject(); drawHead(); drawRows(); drawRates(); refresh();
 }
 
@@ -724,10 +755,6 @@ function drawSubject() {
 
 /* ── the sales table header ── */
 function drawHead() {
-  var order = ['Address', 'Sold for', 'Date sold'].concat(
-    cls().fields.map(function (f) { return f.label.replace(/\?$/, ''); }));
-  $('#pasteOrder').textContent = order.join(' · ');
-
   var head = $('#sheetHead');
   head.innerHTML = '';
   head.appendChild(el('th', { class: 'w-addr', text: 'Address' }));
@@ -911,24 +938,244 @@ function drawRates() {
   moneyBox('market', 'Prices are changing per year (%)');
 }
 
-function pasteRows(text) {
-  var lines = text.split(/\r?\n/).filter(function (l) { return l.trim(); });
-  var added = 0;
-  lines.forEach(function (line) {
-    var cells = line.indexOf('\t') >= 0 ? line.split('\t') : line.split(',');
-    cells = cells.map(function (s) { return s.replace(/^"|"$/g, '').trim(); });
-    if (cells.length < 2) return;
-    if (numOf(cells[1]) == null && dateOf(cells[2]) == null) return;   // heading row
+/* ─────────────────────────────────────────────────────────────
+   Reading a file from CoStar, the MLS, or a spreadsheet.
+
+   Nobody should have to rearrange columns before importing. We
+   read the heading row, work out what each column probably is,
+   and then show you the guess so you can fix it. Nothing is
+   brought in until you have looked at it.
+   ───────────────────────────────────────────────────────────── */
+
+/* Names these exports actually use. Add to these freely — a name
+   that never turns up costs nothing. */
+var SYNONYMS = {
+  addr:  ['address','property address','street address','property name','building name','location','property','building','name','addr','site address'],
+  price: ['sale price','sold price','price','sold for','close price','closing price','transaction price','consideration','sale amount','last sale price','sold','amount'],
+  date:  ['sale date','date sold','close date','closing date','closed','date closed','transaction date','sold date','settlement date','recording date','date recorded','last sale date','close','date'],
+
+  sqft:  ['building sf','rba','rentable building area','square feet','sq ft','sqft','gla','gross leasable area','living area','building size','total sf','size sf','floor area','sf','size'],
+  beds:  ['bedrooms','beds','bed','br','number of bedrooms','no of bedrooms','bdrms'],
+  full:  ['full baths','full bathrooms','baths full','full ba','full bath'],
+  half:  ['half baths','half bathrooms','baths half','half ba','half bath','powder rooms'],
+  year:  ['year built','yr built','built','year constructed','construction year','date built'],
+  gar:   ['garage spaces','garage','car spaces','garage stalls','covered spaces'],
+  lot:   ['lot sq ft','lot size','lot square feet','land sf','land area','site area','lot area','lot sf','land size','acres','lot'],
+  cond:  ['condition','shape','quality','property condition','building condition'],
+  park:  ['parking spaces','parking','spaces','parking count','number of spaces','stalls'],
+  front: ['street frontage','road frontage','frontage','front feet','frontage ft','linear frontage'],
+  height:['clear height','ceiling height','clear ht','max clear height','clear','height'],
+  dock:  ['dock doors','loading doors','loading docks','dock high doors','docks','dh doors','grade doors'],
+  units: ['number of units','unit count','total units','no of units','units'],
+  rent:  ['annual rent','yearly rent','gross rent','scheduled rent','rental income','net operating income','base rent','noi','rent','income']
+};
+
+function tidyHeading(h) {
+  return String(h || '').toLowerCase()
+    .replace(/[\(\)\[\]\{\}\.\,\$\#]/g, ' ')
+    .replace(/[^a-z0-9% ]+/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+/* How well does a heading match one of the names we know?
+   Exact wins, then the name appearing as whole words, then as any
+   run of letters. A longer name winning counts for slightly more,
+   so "Lot Size" beats a bare "Lot". */
+function headingScore(heading, names) {
+  var h = tidyHeading(heading);
+  if (!h) return 0;
+  var best = 0;
+  for (var i = 0; i < names.length; i++) {
+    var t = tidyHeading(names[i]);
+    if (!t) continue;
+    if (h === t) return 100 + t.length / 100;
+    var safe = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var score = 0;
+    if (new RegExp('(^|\\s)' + safe + '($|\\s)').test(h)) score = 80 + t.length / 100;
+    else if (t.length >= 4 && h.indexOf(t) >= 0) score = 62 + t.length / 100;
+    if (score > best) best = score;
+  }
+  return best;
+}
+
+/* Match columns to boxes, strongest match first, one column each. */
+function guessColumns(headings) {
+  var wanted = [{ key: 'addr' }, { key: 'price' }, { key: 'date' }]
+    .concat(cls().fields.map(function (f) { return { key: f.key }; }));
+  var tries = [];
+  headings.forEach(function (h, i) {
+    wanted.forEach(function (w) {
+      var names = SYNONYMS[w.key];
+      if (!names) return;
+      var score = headingScore(h, names);
+      if (score >= 60) tries.push({ col: i, key: w.key, score: score });
+    });
+  });
+  tries.sort(function (a, b) { return b.score - a.score || a.col - b.col; });
+  var picked = {}, usedCol = {}, usedKey = {};
+  tries.forEach(function (t) {
+    if (usedCol[t.col] || usedKey[t.key]) return;
+    picked[t.key] = t.col; usedCol[t.col] = 1; usedKey[t.key] = 1;
+  });
+  return picked;
+}
+
+/* A proper reader: handles quotes, commas inside addresses, tabs. */
+function readTable(text) {
+  text = text.replace(/^﻿/, '');
+  var firstLine = (text.split(/\r?\n/).find(function (l) { return l.trim(); }) || '');
+  var sep = firstLine.indexOf('\t') >= 0 ? '\t' : (firstLine.split(';').length > firstLine.split(',').length ? ';' : ',');
+  var rows = [], row = [], cell = '', quoted = false;
+  for (var i = 0; i < text.length; i++) {
+    var ch = text[i];
+    if (quoted) {
+      if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else quoted = false; }
+      else cell += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === sep) { row.push(cell); cell = ''; }
+    else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if (ch !== '\r') cell += ch;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(function (r) {
+    return r.some(function (v) { return String(v).trim() !== ''; });
+  }).map(function (r) {
+    return r.map(function (v) { return String(v).trim(); });
+  });
+}
+
+/* Some exports write the condition out in words. */
+function readShape(v) {
+  var n = numOf(v);
+  if (n != null && n >= 1 && n <= 5) return Math.round(n);
+  var s = String(v || '').toLowerCase();
+  if (/excellent|like new|new|renovated|pristine/.test(s)) return 5;
+  if (/good|updated|very good|nice/.test(s)) return 4;
+  if (/average|fair|typical|standard/.test(s)) return 3;
+  if (/dated|below average|worn|needs some/.test(s)) return 2;
+  if (/poor|teardown|needs work|distressed|fixer/.test(s)) return 1;
+  return null;
+}
+
+/* Acres get turned into square feet so lot sizes line up. */
+function readLot(v, heading) {
+  var n = numOf(v);
+  if (n == null) return null;
+  if (/acre/i.test(heading || '') && n < 1000) return Math.round(n * 43560);
+  return n;
+}
+
+/* What we read out of the file, held here until you say go. */
+var pending = null;
+
+function openFile(file) {
+  var fr = new FileReader();
+  fr.onload = function () { readFileText(fr.result); };
+  fr.onerror = function () { alert('Could not read that file.'); };
+  fr.readAsText(file);
+}
+
+function readFileText(text) {
+  var rows = readTable(text);
+  if (rows.length < 2) {
+    alert('That does not look like a table of sales. It needs a heading row and at least one sale below it.');
+    return;
+  }
+  pending = { headings: rows[0], rows: rows.slice(1), picked: guessColumns(rows[0]) };
+  $('#pasteCard').hidden = true;
+  drawReview();
+  $('#reviewCard').hidden = false;
+  $('#reviewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* Every column in the file, what we think it is, and a real value from
+   the file so you can tell at a glance whether we got it right. */
+function drawReview() {
+  var choices = [{ key: 'addr', name: 'Address' }, { key: 'price', name: 'Sold for' },
+                 { key: 'date', name: 'Date sold' }]
+    .concat(cls().fields.map(function (f) { return { key: f.key, name: f.label.replace(/\?$/, '') }; }));
+
+  var t = $('#reviewTable');
+  t.innerHTML = '';
+  var head = el('tr', {}, [el('th', { text: 'Column in your file' }),
+    el('th', { text: 'For example' }), el('th', { text: 'We think this is' })]);
+  t.appendChild(el('thead', {}, [head]));
+
+  var body = el('tbody');
+  pending.headings.forEach(function (h, i) {
+    var mine = null;
+    for (var k in pending.picked) if (pending.picked[k] === i) mine = k;
+
+    var sample = '';
+    for (var r = 0; r < pending.rows.length && !sample; r++) sample = pending.rows[r][i] || '';
+
+    var pick = el('select', { onchange: function (e) {
+      for (var k2 in pending.picked) if (pending.picked[k2] === i) delete pending.picked[k2];
+      if (e.target.value) pending.picked[e.target.value] = i;
+      drawReview();
+    } });
+    pick.appendChild(el('option', { value: '' }, ['— ignore this column —']));
+    choices.forEach(function (ch) {
+      var takenBy = pending.picked[ch.key];
+      var free = takenBy == null || takenBy === i;
+      pick.appendChild(el('option', { value: ch.key, selected: ch.key === mine,
+        disabled: !free }, [ch.name + (free ? '' : ' (already used)')]));
+    });
+
+    body.appendChild(el('tr', {}, [
+      el('td', { text: h || '(column ' + (i + 1) + ')' }),
+      el('td', {}, [el('span', { class: 'eg', text: sample })]),
+      el('td', {}, [pick])
+    ]));
+  });
+  t.appendChild(body);
+
+  var got = Object.keys(pending.picked).length;
+  $('#reviewCount').textContent = pending.rows.length + ' sale' + (pending.rows.length === 1 ? '' : 's') +
+    ' in the file, and we matched ' + got + ' of the ' + pending.headings.length + ' columns.';
+
+  var warn = $('#reviewWarn');
+  if (pending.picked.price == null) {
+    warn.textContent = 'Nothing is marked as the sale price — pick it above or nothing can be used.';
+    warn.style.color = 'var(--red)';
+  } else if (pending.picked.date == null) {
+    warn.textContent = 'No date sold, so nothing will be adjusted for how long ago it sold.';
+    warn.style.color = 'var(--amber)';
+  } else { warn.textContent = ''; }
+}
+
+/* Turn what's on screen into actual sales. */
+function takeImport() {
+  if (!pending) return 0;
+  var got = pending.picked, fields = cls().fields, added = 0, skipped = 0;
+
+  pending.rows.forEach(function (cells) {
+    var price = got.price != null ? numOf(cells[got.price]) : null;
+    if (price == null || price <= 0) { skipped++; return; }
+
     var c = blankComp();
-    c.addr = cells[0] || '';
-    c.price = numOf(cells[1]);
-    c.dateText = cells[2] || '';
-    c.date = dateOf(cells[2]);
-    /* Everything after the date lines up with the boxes for this kind. */
-    cls().fields.forEach(function (f, i) { c[f.key] = numOf(cells[3 + i]); });
+    c.addr = got.addr != null ? (cells[got.addr] || '') : '';
+    c.price = price;
+    if (got.date != null) { c.dateText = cells[got.date] || ''; c.date = dateOf(c.dateText); }
+
+    fields.forEach(function (f) {
+      var col = got[f.key];
+      if (col == null) return;
+      var raw = cells[col];
+      if (f.kind === 'shape') c[f.key] = readShape(raw);
+      else if (f.kind === 'land' || f.key === 'lot') c[f.key] = readLot(raw, pending.headings[col]);
+      else c[f.key] = numOf(raw);
+    });
     comps.push(c); added++;
   });
-  return added;
+
+  /* Clear out any rows still sitting empty, so the table isn't padded
+     with blanks after an import. */
+  comps = comps.filter(function (c) { return c.addr || c.price; });
+  if (!comps.length) comps.push(blankComp());
+
+  pending = null;
+  return { added: added, skipped: skipped };
 }
 
 /* One worked example per kind, so the buttons do something no matter
@@ -1058,7 +1305,7 @@ function restore(data) {
     cls().fields.forEach(function (f) { if (raw[f.key] != null) c[f.key] = raw[f.key]; });
     return c;
   });
-  while (comps.length < 3) comps.push(blankComp());
+  if (!comps.length) comps.push(blankComp());
   drawRows(); drawRates(); refresh();
   return true;
 }
@@ -1130,6 +1377,10 @@ function saveToFile() {
                   '<div class="big">Fill in the property and at least one sale below</div>';
   pick('#pasteCard').setAttribute('hidden', '');
   pick('#pasteBox').textContent = '';
+  pick('#reviewCard').setAttribute('hidden', '');
+  pick('#reviewTable').innerHTML = '';
+  pick('#reviewCount').textContent = '';
+  pick('#reviewWarn').textContent = '';
   Array.prototype.forEach.call(copy.querySelectorAll('details'), function (d) { d.removeAttribute('open'); });
   var stale = pick('#saved-data');
   if (stale) stale.parentNode.removeChild(stale);
@@ -1169,7 +1420,7 @@ function start() {
   drawKinds();
   drawSubject();
   drawHead();
-  for (var i = 0; i < 3; i++) comps.push(blankComp());
+  comps.push(blankComp());
   drawRows();
   drawRates();
 
@@ -1199,7 +1450,7 @@ function start() {
     if (!confirm('Clear everything and start over?\n\nAnything this computer remembered will be forgotten too.')) return;
     $('#j_addr').value = '';
     drawSubject();
-    comps = [blankComp(), blankComp(), blankComp()];
+    comps = [blankComp()];
     forget();
     $('#reopened').hidden = true;
     $('#saveLine').innerHTML = '';
@@ -1207,15 +1458,54 @@ function start() {
   });
 
   $('#btnPaste').addEventListener('click', function () {
-    $('#pasteCard').hidden = false; $('#pasteBox').focus();
+    $('#pasteCard').hidden = false;
+    $('#pasteCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-  $('#btnPasteCancel').addEventListener('click', function () { $('#pasteCard').hidden = true; });
+  $('#btnPasteCancel').addEventListener('click', function () {
+    $('#pasteCard').hidden = true; $('#pasteBox').value = '';
+  });
   $('#btnPasteGo').addEventListener('click', function () {
-    var n = pasteRows($('#pasteBox').value);
-    if (!n) { alert('Nothing there looked like a sale. Check that the address is first and the price is second.'); return; }
-    comps = comps.filter(function (c) { return c.price != null || c.addr; });
-    $('#pasteBox').value = ''; $('#pasteCard').hidden = true;
+    var t = $('#pasteBox').value;
+    if (!t.trim()) { alert('Paste the rows in first, or drop a file above.'); return; }
+    readFileText(t);
+    $('#pasteBox').value = '';
+  });
+
+  $('#btnBrowse').addEventListener('click', function () { $('#fileBox').click(); });
+  $('#fileBox').addEventListener('change', function (e) {
+    if (e.target.files[0]) openFile(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  /* Dropping works on the box, and anywhere on the page. */
+  var dropbox = $('#dropbox');
+  function stop(e) { e.preventDefault(); e.stopPropagation(); }
+  ['dragenter','dragover'].forEach(function (ev) {
+    dropbox.addEventListener(ev, function (e) { stop(e); dropbox.classList.add('over'); });
+  });
+  ['dragleave','drop'].forEach(function (ev) {
+    dropbox.addEventListener(ev, function (e) { stop(e); dropbox.classList.remove('over'); });
+  });
+  dropbox.addEventListener('drop', function (e) {
+    if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]);
+  });
+  ['dragover','drop'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) {
+      if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+      stop(e);
+      if (ev === 'drop') { $('#pasteCard').hidden = false; openFile(e.dataTransfer.files[0]); }
+    });
+  });
+
+  $('#btnImportCancel').addEventListener('click', function () {
+    pending = null; $('#reviewCard').hidden = true;
+  });
+  $('#btnImportGo').addEventListener('click', function () {
+    var r = takeImport();
+    $('#reviewCard').hidden = true;
     drawRows(); refresh();
+    if (r.skipped) alert('Added ' + r.added + ' sale' + (r.added === 1 ? '' : 's') + '. ' +
+      r.skipped + ' row' + (r.skipped === 1 ? ' was' : 's were') + ' left out for having no sale price.');
   });
 
   /* Opening the file straight off the disk sometimes blocks the browser's
