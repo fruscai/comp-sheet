@@ -10,8 +10,11 @@ a spare room. Not an analyst, not an appraiser, not a fund.
 
 If a change only makes sense to someone with a finance background, it does not
 belong here. This tool already got built the wrong way once — as an
-institutional appraisal platform — and had to be thrown out. See
-[DECISIONS.md](DECISIONS.md).
+institutional appraisal platform of 3,407 lines, with four valuation approaches,
+Proposition 13 reassessment and a statistical reliability grade. It worked. All
+ten of its internal arithmetic checks passed. It was thrown out anyway, because
+it was built for the wrong person. Scoping questions expand scope; they do not
+tell you who sits in front of the thing.
 
 ## Two rules that override everything
 
@@ -119,8 +122,14 @@ assigned strongest-first, one column per box.
 Two-letter names like `sp`, `fb`, `yb` are safe: they only ever land on an exact
 or whole-word hit, never as a substring. Names of four or more characters also
 match as a substring, so watch those — `lot`, `sf` and `rent` sit inside plenty
-of unrelated headings. There was already one bug here where every nine-character
-heading matched every nine-character synonym; see DECISIONS.md.
+of unrelated headings.
+
+One bug here is worth remembering. Matching used `indexOf` compared against index
+arithmetic, and when `indexOf` returned `-1` for "not found" the arithmetic
+sometimes also produced `-1`, so the comparison passed. Every heading matched
+every synonym of the same character length — `Submarket` was read as the lot
+size because "land area" is also nine characters. It was found by checking *what
+each column mapped to*, not by checking that nothing threw. Test the mapping.
 
 Where the line falls, measured against the files in `samples/`:
 
@@ -180,6 +189,47 @@ have caught real bugs:
   card says so.
 - Charts. The per-sale cards are the explanation.
 - A backend, accounts, or sync.
+
+## Why it works the way it does
+
+**Dollar adjustments, not percentages.** An agent can look at "$12,000 a
+bathroom" and say *not around here, it's more like eight*. Nobody argues
+productively with "a 4.2% net adjustment". The numbers ship as guesses and need
+local correction, so they have to be arguable. Market conditions is the one
+exception, because it genuinely is a rate.
+
+**Comparables needing more than 35% gross adjustment are excluded**, and the card
+says so. Quietly averaging in a poor comparable produces a confident number built
+on an irrelevant property. Better to lose a data point loudly. Likewise a blank
+box is omitted from the adjustment, never filled with an assumption.
+
+**Weighting is closeness × freshness** — `1/(1+3×gross adjustment)` times
+`0.5^(months/18)`. Requiring little adjustment is what comparable means, and an
+old sale describes an older market. Both curves are deliberately gentle; sharper
+ones let a single comparable dominate and the value swings wildly as sales are
+added.
+
+**The range is the spread of the comparables, not a confidence interval.** An
+earlier version computed a proper standard error with Kish effective sample
+sizes. More sophisticated, less honest: comparables are not a random sample of
+anything, so the statistics implied a rigour that was not there.
+
+**The rent multiple never feeds the indicated value.** Blending two methods into
+one figure hides which is doing the work. Side by side, a disagreement is visible
+and useful.
+
+**Saving writes the whole page with the data inside it**, rather than a `.json`
+export. A non-technical user knows what to do with a file that opens; a JSON file
+needs the tool, an import step, and knowing those two things go together. Two
+details matter: `<` is escaped in the payload so an address containing
+`</script>` cannot truncate the file, and any existing data block is removed
+before the new one is added so re-saving does not stack copies.
+
+**Import opens inside the section it fills.** Both buttons previously opened one
+shared panel elsewhere on the page, which read as a single control. Pressing
+Import under Subject property now expands the panel inside that card. The button
+you press is what the file is for — there is nothing to declare and nothing to
+pick.
 
 ## Known rough edges
 

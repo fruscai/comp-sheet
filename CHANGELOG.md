@@ -54,7 +54,7 @@
   active.
 - A worked example per property kind, so "See an example" does something useful
   whichever kind you're on.
-- Project docs: `CLAUDE.md`, `DECISIONS.md`, this file.
+- Project notes: `CLAUDE.md` and this file.
 
 ### Fixed
 - **The sales table no longer starts with empty rows.** It opens saying "No
@@ -100,5 +100,5 @@ California Proposition 13 reassessment, San Francisco transfer tax brackets and
 a statistical reliability grade.
 
 It was replaced wholesale with an 811-line single-purpose tool aimed at the
-person who actually uses it. The reasoning is in [DECISIONS.md](DECISIONS.md),
-and it's the most important thing in this repository.
+person who actually uses it. The reasoning is in [CLAUDE.md](CLAUDE.md), and it
+is the most useful thing in this repository.
