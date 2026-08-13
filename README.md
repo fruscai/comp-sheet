@@ -43,15 +43,13 @@ Every comparable gets its own adjustment detail:
 A CoStar export, an MLS download, or anything saved out of Excel. Columns can be
 in any order and extra columns are ignored.
 
-First it asks what is in the file:
+There is an **Import CSV** button under each section heading — one under
+*Subject property*, one under *Comparable sales*. Which button you press is what
+the file is for. Each takes a dropped file or pasted rows.
 
-- **Comparable sales** — every row is a sale; the subject section is left alone.
-- **The subject property** — fills the subject section only.
-- **Both** — the subject is one of the rows; you pick which and the rest become
-  comparable sales.
-
-So the subject and the comparables can come from two separate exports, imported
-one after the other, or from a single file holding everything.
+Importing comparables leaves the subject alone and vice versa, so the two can
+come from separate exports. If a subject file holds more than one row you choose
+which to use.
 
 Then it reads the heading row, works out which column is which, and shows you
 every column with a real value beside it and what it made of it. Fix anything

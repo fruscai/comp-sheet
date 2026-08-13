@@ -3,26 +3,14 @@
 ## Unreleased
 
 ### Added
-- **The import asks what is in the file.** Three choices before you pick a file:
-  *Comparable sales* (every row is a sale), *The subject property* (fills the
-  subject section only, adds nothing to the table), or *Both* (the subject is
-  one of the rows — you pick which, the rest become sales). This means the
-  subject and the comparables can arrive as two separate files, imported one
-  after the other, which is how they usually come.
-- **One import fills both sections.** The import step asks which row is the
-  subject property; that row fills the Subject property section and every other
-  row is brought in as a comparable sale. If the file holds only sales, leave it
-  set to "None". Reachable from a dedicated Import card above the two sections,
-  from the Comparable sales card, from the top button row, or by dropping a file
-  anywhere on the page.
+- **An Import CSV button under each section heading.** One under *Subject
+  property*, one under *Comparable sales*. Which button you press is what the
+  file is for — no separate import screen and nothing to choose. Each accepts a
+  dropped file or pasted rows. Importing comparables leaves the subject alone
+  and vice versa, so the two can come from separate exports.
 - **Sample files** in `samples/` covering the three shapes this has been tested
   against: a file with the subject included, a comparables-only file with junk
   columns and a row missing its price, and a tab-separated industrial file.
-- **Import fills the subject property as well as the comparables.** If the
-  property being valued is one of the rows in the file, say which and its
-  details go into the subject boxes while the remaining rows become comparable
-  sales. Previously only the comparables could be imported, which meant typing
-  the subject in by hand from the same export.
 
 ### Changed
 - **Rewritten in the language of the trade.** The screen now reads *subject

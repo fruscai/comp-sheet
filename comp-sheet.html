@@ -131,13 +131,6 @@ details > .body{padding:0 20px 20px}
 .saveline b{color:var(--green);font-weight:600}
 .saveline button{padding:0;font-size:13.5px}
 
-.whatis{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:0 0 14px;background:#fbfcfe}
-.whatis .q{font-weight:650;font-size:14.5px;margin-bottom:9px}
-.whatis label{display:flex;gap:10px;align-items:flex-start;padding:7px 0;cursor:pointer}
-.whatis input{width:auto;margin-top:3px;flex:none}
-.whatis b{display:block;font-size:14px;font-weight:600}
-.whatis i{display:block;font-style:normal;font-size:13px;color:var(--ink-soft);margin-top:1px}
-
 .dropbox{border:2px dashed var(--line);border-radius:var(--r);padding:24px 18px;text-align:center;
   background:#fbfcfe;transition:border-color .15s,background .15s}
 .dropbox.over{border-color:var(--blue);background:var(--blue-soft)}
@@ -206,26 +199,16 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   <button class="primary" id="btnPrint">Print</button>
   <button id="btnSave">Save</button>
   <button id="btnExample">Load example</button>
-  <button id="btnPaste">Import CSV</button>
   <button id="btnClear">Clear all</button>
 </div>
 <p class="saveline noprint" id="saveLine"></p>
 
 <!-- IMPORT -->
 <div class="card noprint" id="pasteCard" hidden>
-  <h2>Import from a CSV</h2>
+  <h2 id="importTitle">Import</h2>
+  <p class="hint" id="importHint"></p>
   <p class="hint">Columns can be in any order and extra columns are ignored. You will see how each
     column was read before anything is brought in.</p>
-
-  <div class="whatis">
-    <div class="q">What is in this file?</div>
-    <label><input type="radio" name="filekind" value="comps" checked />
-      <span><b>Comparable sales</b><i>Every row is a sale. The subject property is not in this file.</i></span></label>
-    <label><input type="radio" name="filekind" value="subject" />
-      <span><b>The subject property</b><i>The property being valued. Fills the Subject property section only.</i></span></label>
-    <label><input type="radio" name="filekind" value="both" />
-      <span><b>Both</b><i>The subject is one of the rows. You will pick which; the rest become sales.</i></span></label>
-  </div>
 
   <div class="dropbox" id="dropbox">
     <p><strong>Drop a CSV file here</strong></p>
@@ -267,23 +250,14 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   <div class="kinds noprint" id="kinds"></div>
 </div>
 
-<!-- IMPORT ENTRY -->
-<div class="card noprint" id="importEntry">
-  <h2>Import from a CSV</h2>
-  <p class="hint">One file fills in both sections below — the subject property and the comparable
-    sales. A CoStar export, an MLS download, or anything saved out of Excel. Columns can be in any
-    order.</p>
-  <div class="row">
-    <button class="primary" id="btnImportMain">Choose a CSV file</button>
-    <span class="tiny">You will be asked which row is the subject property. Every other row becomes a
-      comparable sale. You can also drop a file anywhere on this page.</span>
-  </div>
-</div>
-
 <!-- SUBJECT -->
 <div class="card">
   <h2 id="subjectTitle">Subject property</h2>
   <p class="hint" id="subjectHint"></p>
+  <div class="row noprint" style="margin-bottom:16px">
+    <button id="btnImportSubject">Import CSV</button>
+    <span class="tiny">Drop a file or paste rows. Fills the boxes below.</span>
+  </div>
   <div class="grid g4" style="margin-bottom:12px">
     <label class="f" style="grid-column:span 2"><span>Address</span>
       <input id="j_addr" placeholder="1450 Maple Avenue" /></label>
@@ -297,6 +271,10 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   <p class="hint">Three to five sales from the past year, as close in location and character to the
     subject as possible. Leave any element you don't have blank and it is omitted from the
     adjustment rather than estimated.</p>
+  <div class="row noprint" style="margin-bottom:16px">
+    <button id="btnImportComps">Import CSV</button>
+    <span class="tiny">Drop a file or paste rows. Adds a row per sale.</span>
+  </div>
   <div class="scroll">
     <table class="sheet">
       <thead><tr id="sheetHead"></tr></thead>
@@ -305,7 +283,6 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   </div>
   <div class="row noprint" style="margin-top:14px">
     <button id="btnAdd">+ Add another comparable</button>
-    <button id="btnImportHere">Import from a CSV</button>
   </div>
 </div>
 
@@ -845,13 +822,7 @@ function drawRows() {
   if (!comps.length) {
     var span = cls().fields.length + 4;
     body.appendChild(el('tr', {}, [el('td', { colspan: span, class: 'nothingyet' }, [
-      'No comparable sales yet. ',
-      el('button', { class: 'link', onclick: openImport }, ['Import a CSV']),
-      ' or ',
-      el('button', { class: 'link', onclick: function () {
-        comps.push(blankComp()); drawRows(); refresh();
-      } }, ['add one by hand']),
-      '.'
+      'No comparable sales yet — use Import CSV above, or add one and enter it directly.'
     ])]));
     $('#btnAdd').textContent = '+ Add a comparable';
     return;
@@ -1157,15 +1128,19 @@ function readLot(v, heading) {
 /* What we read out of the file, held here until you say go. */
 var pending = null;
 
-function fileKind() {
-  var picked = document.querySelector('input[name="filekind"]:checked');
-  return picked ? picked.value : 'comps';
-}
+var importMode = 'comps';        // set by whichever Import CSV button was used
 
-function openImport() {
+function openImport(which) {
+  importMode = (which === 'subject') ? 'subject' : 'comps';
+  $('#importTitle').textContent = importMode === 'subject'
+    ? 'Import the subject property' : 'Import comparable sales';
+  $('#importHint').textContent = importMode === 'subject'
+    ? 'The property being valued. If the file holds more than one row you choose which to use.'
+    : 'Every row with a sale price is added as a comparable. The subject property is left as it is.';
   $('#pasteCard').hidden = false;
   $('#reviewCard').hidden = true;
   $('#pasteCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('#pasteBox').value = '';
 }
 
 function openFile(file) {
@@ -1181,9 +1156,8 @@ function readFileText(text) {
     alert('That does not read as a table. It needs a heading row and at least one row of data below it.');
     return;
   }
-  var kind = fileKind();
   pending = { headings: rows[0], rows: rows.slice(1), picked: guessColumns(rows[0]),
-              kind: kind, mine: (kind === 'subject' || kind === 'both') ? 0 : null };
+              kind: importMode, mine: importMode === 'subject' ? 0 : null };
   $('#pasteCard').hidden = true;
   drawReview();
   $('#reviewCard').hidden = false;
@@ -1239,12 +1213,11 @@ function drawReview() {
   /* Say back what this file is being used for, and offer the row picker
      only when the file is meant to hold both. */
   var kind = pending.kind;
-  $('#reviewWhat').innerHTML =
-      kind === 'subject' ? '<strong>Filling the Subject property section.</strong> No comparable sales will be added from this file.'
-    : kind === 'both'    ? '<strong>Filling both sections.</strong> Choose the row that is the property you are valuing; every other row is brought in as a comparable sale.'
-    :                      '<strong>Adding comparable sales.</strong> Every row with a sale price is brought in. The Subject property section is left as it is.';
+  $('#reviewWhat').innerHTML = kind === 'subject'
+    ? '<strong>Filling the Subject property section.</strong> Nothing is added to the comparable sales table.'
+    : '<strong>Adding comparable sales.</strong> Every row with a sale price is added. The Subject property section is left as it is.';
 
-  var picking = (kind === 'both') || (kind === 'subject' && pending.rows.length > 1);
+  var picking = kind === 'subject' && pending.rows.length > 1;
   $('#pickRow').hidden = !picking;
   if (picking) {
     var mineBox = $('#whichIsMine');
@@ -1294,7 +1267,7 @@ function takeImport() {
 
   /* Fill the subject from the chosen row, for a subject file or a
      combined one. */
-  if ((kind === 'subject' || kind === 'both') && pending.rows[pending.mine || 0]) {
+  if (kind === 'subject' && pending.rows[pending.mine || 0]) {
     mineRow = pending.mine || 0;
     var cells = pending.rows[mineRow];
     if (got.addr != null && cells[got.addr]) $('#j_addr').value = cells[got.addr];
@@ -1610,9 +1583,8 @@ function start() {
     drawRows(); refresh();
   });
 
-  $('#btnImportMain').addEventListener('click', openImport);
-  $('#btnImportHere').addEventListener('click', openImport);
-  $('#btnPaste').addEventListener('click', openImport);
+  $('#btnImportSubject').addEventListener('click', function () { openImport('subject'); });
+  $('#btnImportComps').addEventListener('click', function () { openImport('comps'); });
   $('#btnPasteCancel').addEventListener('click', function () {
     $('#pasteCard').hidden = true; $('#pasteBox').value = '';
   });
@@ -1645,7 +1617,7 @@ function start() {
     document.addEventListener(ev, function (e) {
       if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
       stop(e);
-      if (ev === 'drop') { openImport(); openFile(e.dataTransfer.files[0]); }
+      if (ev === 'drop') { openImport(importMode); openFile(e.dataTransfer.files[0]); }
     });
   });
 
