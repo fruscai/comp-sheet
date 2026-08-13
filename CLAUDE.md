@@ -15,22 +15,45 @@ institutional appraisal platform — and had to be thrown out. See
 
 ## Two rules that override everything
 
-**1. Plain language. Everywhere.**
+**1. Use the vocabulary of the trade, written clearly.**
 
-Not just the screen — the code and its comments too. Say what a thing does in
-the words the user would use.
+This is a valuation tool. Use the words a CMA or an appraisal uses — *subject
+property, comparable sales, adjustments, elements of comparison, indicated
+value, market conditions, condition, gross adjustment*. An agent's assistant
+reads these every day.
 
-| Don't | Do |
+Two failure modes, and this project has hit both:
+
+*Consultant filler* — "dispersion band", "reconcile the indications", "gross
+adjustment burden", "ingest". Words that add ceremony, not meaning.
+
+*Baby talk* — "Shape" for condition, "nudge" for adjustment, "How we got there"
+for the adjustment detail, "Bring in a file" for import. Writing down to the
+reader is its own kind of disrespect, and it makes the output useless to hand to
+a client.
+
+| Wrong (either way) | Right |
 |---|---|
-| ingest, parse, coerce, transmute | read, take |
-| reconcile, aggregate | average, add up |
-| dispersion band, confidence interval | how far apart the sales are |
-| gross adjustment burden | how much we had to nudge it |
-| subject property | the house you're pricing / yours |
-| comparable | sale, or the address itself |
+| Shape · what kind of shape is it in | Condition |
+| nudge · change | adjustment |
+| the house you're pricing | subject property |
+| recent houses sold nearby | comparable sales |
+| How we got there | Adjustment detail |
+| Suggested price | Indicated value |
+| Solid / Rough | High confidence / Limited confidence |
+| Somewhere between X and Y | Range of value: X to Y |
+| dispersion band, reconcile, ingest | (never) |
 
-Variables and functions follow this too: `theHouse()`, `howLongAgo()`,
-`hasAnything()`, `rememberLater()`. Not `getSubjectEntity()`.
+Adjustment lines are written the way a grid reads — the element being adjusted,
+then how the two properties differ, then the amount:
+
+```
+Building area      Subject is 130 square feet smaller      −$14,300
+Market conditions  Sold 5 months ago; market up 3% per year  +$8,480
+```
+
+Full sentences. Professional register. No exclamation marks, no cheerleading,
+and no shortening a real term to sound friendlier.
 
 **2. Faster than doing it by hand, or it has no reason to exist.**
 

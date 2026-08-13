@@ -3,6 +3,23 @@
 ## Unreleased
 
 ### Added
+- **Import fills the subject property as well as the comparables.** If the
+  property being valued is one of the rows in the file, say which and its
+  details go into the subject boxes while the remaining rows become comparable
+  sales. Previously only the comparables could be imported, which meant typing
+  the subject in by hand from the same export.
+
+### Changed
+- **Rewritten in the language of the trade.** The screen now reads *subject
+  property*, *comparable sales*, *adjustments*, *indicated value*, *market
+  conditions*, *condition* and *gross adjustment* — the words a CMA uses —
+  instead of the plainer-than-plain wording it had ("Shape", "nudge", "How we
+  got there", "Suggested price"). Condition is graded poor / fair / average /
+  good / excellent. Confidence reads high / moderate / limited / insufficient.
+- **Adjustment lines are laid out as a grid reads**: the element being adjusted,
+  how the two properties differ, then the amount.
+
+### Added
 - **Bring in sales from a file.** Drop a CoStar export, an MLS download or
   anything saved out of Excel. Columns can be in any order and extra columns are
   ignored — the heading row is read and each column matched to a box. You then
