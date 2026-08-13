@@ -1282,7 +1282,7 @@ function save(name, text, type) {
    still there. Neither one sends anything anywhere.
    ───────────────────────────────────────────────────────────── */
 
-var MEMORY_KEY = 'comp-sheet-work';
+var MEMORY_KEY = 'comp-sheet-work-3';   // bumped when the saved shape changes
 
 function snapshot() {
   var house = { j_addr: $('#j_addr').value };
@@ -1291,7 +1291,7 @@ function snapshot() {
     house['j_' + f.key] = box ? box.value : '';
   });
   return {
-    version: 2,
+    version: SAVE_VERSION,
     savedAt: new Date().toISOString(),
     kind: className,
     house: house,
@@ -1304,8 +1304,14 @@ function snapshot() {
   };
 }
 
+var SAVE_VERSION = 3;
+
 function restore(data) {
   if (!data || !data.house) return false;
+  /* Anything written by an older version is left alone rather than
+     half-loaded. A stale snapshot restoring over new code looks exactly
+     like the new code never arrived. */
+  if (data.version !== SAVE_VERSION) return false;
 
   if (data.kind && CLASSES[data.kind]) className = data.kind;
   rates = startingRates();
