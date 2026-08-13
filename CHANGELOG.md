@@ -3,6 +3,12 @@
 ## Unreleased
 
 ### Added
+- **The import asks what is in the file.** Three choices before you pick a file:
+  *Comparable sales* (every row is a sale), *The subject property* (fills the
+  subject section only, adds nothing to the table), or *Both* (the subject is
+  one of the rows — you pick which, the rest become sales). This means the
+  subject and the comparables can arrive as two separate files, imported one
+  after the other, which is how they usually come.
 - **One import fills both sections.** The import step asks which row is the
   subject property; that row fills the Subject property section and every other
   row is brought in as a comparable sale. If the file holds only sales, leave it

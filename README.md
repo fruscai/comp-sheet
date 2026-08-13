@@ -39,10 +39,21 @@ Then it shows its work in plain sentences, one card per sale:
 Drop a CoStar export, an MLS download, or anything saved out of Excel. The
 columns can be in any order, and extra columns are ignored.
 
-It reads the heading row and works out which column is which, then shows you
-every column with a real value beside it and what it thinks that column is. Fix
-anything it got wrong from a dropdown, then add them. Nothing is brought in
-until you've looked.
+First it asks what is in the file:
+
+- **Comparable sales** — every row is a sale; the subject section is left alone.
+- **The subject property** — fills the subject section only.
+- **Both** — the subject is one of the rows; you pick which and the rest become
+  comparable sales.
+
+So the subject and the comparables can come from two separate exports, imported
+one after the other, or from a single file holding everything.
+
+Then it reads the heading row, works out which column is which, and shows you
+every column with a real value beside it and what it made of it. Fix anything
+wrong from a dropdown. Nothing is brought in until you've looked.
+
+Sample files covering all of these are in [`samples/`](samples).
 
 Acres are converted to square feet, conditions written as words are read as the
 1–5 scale, and rows without a sale price are left out and counted.

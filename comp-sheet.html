@@ -131,6 +131,13 @@ details > .body{padding:0 20px 20px}
 .saveline b{color:var(--green);font-weight:600}
 .saveline button{padding:0;font-size:13.5px}
 
+.whatis{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:0 0 14px;background:#fbfcfe}
+.whatis .q{font-weight:650;font-size:14.5px;margin-bottom:9px}
+.whatis label{display:flex;gap:10px;align-items:flex-start;padding:7px 0;cursor:pointer}
+.whatis input{width:auto;margin-top:3px;flex:none}
+.whatis b{display:block;font-size:14px;font-weight:600}
+.whatis i{display:block;font-style:normal;font-size:13px;color:var(--ink-soft);margin-top:1px}
+
 .dropbox{border:2px dashed var(--line);border-radius:var(--r);padding:24px 18px;text-align:center;
   background:#fbfcfe;transition:border-color .15s,background .15s}
 .dropbox.over{border-color:var(--blue);background:var(--blue-soft)}
@@ -210,6 +217,16 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   <p class="hint">Columns can be in any order and extra columns are ignored. You will see how each
     column was read before anything is brought in.</p>
 
+  <div class="whatis">
+    <div class="q">What is in this file?</div>
+    <label><input type="radio" name="filekind" value="comps" checked />
+      <span><b>Comparable sales</b><i>Every row is a sale. The subject property is not in this file.</i></span></label>
+    <label><input type="radio" name="filekind" value="subject" />
+      <span><b>The subject property</b><i>The property being valued. Fills the Subject property section only.</i></span></label>
+    <label><input type="radio" name="filekind" value="both" />
+      <span><b>Both</b><i>The subject is one of the rows. You will pick which; the rest become sales.</i></span></label>
+  </div>
+
   <div class="dropbox" id="dropbox">
     <p><strong>Drop a CSV file here</strong></p>
     <p class="tiny">or <button class="link" id="btnBrowse">choose a file</button> · or paste the rows below</p>
@@ -228,20 +245,12 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   <h2>Confirm how the file was read</h2>
   <p class="hint" id="reviewCount"></p>
 
-  <div class="note info" style="margin-bottom:16px">
-    <strong>Step 1 — say which row is the property you are valuing.</strong> That row fills in the
-    Subject property section. Every other row is brought in as a comparable sale. If the file holds
-    only sales and the subject is not among them, leave this set to "None".
-  </div>
-  <label class="f" id="pickRow" style="max-width:460px;margin-bottom:20px">
+  <div class="note info" id="reviewWhat" style="margin-bottom:16px"></div>
+
+  <label class="f" id="pickRow" style="max-width:460px;margin-bottom:20px" hidden>
     <span>Which row is the subject property?</span>
     <select id="whichIsMine"></select>
   </label>
-
-  <div class="note info" style="margin-bottom:12px">
-    <strong>Step 2 — check the columns.</strong> Each column below shows a real value from your file
-    and what it was read as. Correct anything wrong before importing.
-  </div>
 
   <div class="scroll"><table class="sheet" id="reviewTable"></table></div>
   <div class="row" style="margin-top:14px">
@@ -1148,6 +1157,11 @@ function readLot(v, heading) {
 /* What we read out of the file, held here until you say go. */
 var pending = null;
 
+function fileKind() {
+  var picked = document.querySelector('input[name="filekind"]:checked');
+  return picked ? picked.value : 'comps';
+}
+
 function openImport() {
   $('#pasteCard').hidden = false;
   $('#reviewCard').hidden = true;
@@ -1167,7 +1181,9 @@ function readFileText(text) {
     alert('That does not read as a table. It needs a heading row and at least one row of data below it.');
     return;
   }
-  pending = { headings: rows[0], rows: rows.slice(1), picked: guessColumns(rows[0]) };
+  var kind = fileKind();
+  pending = { headings: rows[0], rows: rows.slice(1), picked: guessColumns(rows[0]),
+              kind: kind, mine: (kind === 'subject' || kind === 'both') ? 0 : null };
   $('#pasteCard').hidden = true;
   drawReview();
   $('#reviewCard').hidden = false;
@@ -1220,22 +1236,34 @@ function drawReview() {
   $('#reviewCount').textContent = pending.rows.length + ' row' + (pending.rows.length === 1 ? '' : 's') +
     ' in the file. ' + got + ' of ' + pending.headings.length + ' columns matched.';
 
-  /* Which row is the property being valued, if any. */
-  $('#pickRow').hidden = false;
-  var mineBox = $('#whichIsMine');
-  mineBox.innerHTML = '';
-  mineBox.appendChild(el('option', { value: '' }, ['None — every row is a comparable sale']));
-  pending.rows.forEach(function (cells, i) {
-    var label = pending.picked.addr != null ? (cells[pending.picked.addr] || '') : '';
-    if (!label) label = 'Row ' + (i + 1);
-    mineBox.appendChild(el('option', { value: i, selected: pending.mine === i }, [label]));
-  });
-  mineBox.onchange = function (e) {
-    pending.mine = e.target.value === '' ? null : parseInt(e.target.value, 10);
-  };
+  /* Say back what this file is being used for, and offer the row picker
+     only when the file is meant to hold both. */
+  var kind = pending.kind;
+  $('#reviewWhat').innerHTML =
+      kind === 'subject' ? '<strong>Filling the Subject property section.</strong> No comparable sales will be added from this file.'
+    : kind === 'both'    ? '<strong>Filling both sections.</strong> Choose the row that is the property you are valuing; every other row is brought in as a comparable sale.'
+    :                      '<strong>Adding comparable sales.</strong> Every row with a sale price is brought in. The Subject property section is left as it is.';
+
+  var picking = (kind === 'both') || (kind === 'subject' && pending.rows.length > 1);
+  $('#pickRow').hidden = !picking;
+  if (picking) {
+    var mineBox = $('#whichIsMine');
+    mineBox.innerHTML = '';
+    pending.rows.forEach(function (cells, i) {
+      var label = pending.picked.addr != null ? (cells[pending.picked.addr] || '') : '';
+      if (!label) label = 'Row ' + (i + 1);
+      mineBox.appendChild(el('option', { value: i, selected: pending.mine === i }, [label]));
+    });
+    if (pending.mine == null) pending.mine = 0;
+    mineBox.value = pending.mine;
+    mineBox.onchange = function (e) { pending.mine = parseInt(e.target.value, 10); };
+  }
 
   var warn = $('#reviewWarn');
-  if (pending.picked.price == null) {
+  if (pending.kind === 'subject') {
+    warn.textContent = 'Sale price and date are not needed for the subject property.';
+    warn.style.color = 'var(--ink-faint)';
+  } else if (pending.picked.price == null) {
     warn.textContent = 'No column is set as the sale price. Set one, or no rows can be used.';
     warn.style.color = 'var(--red)';
   } else if (pending.picked.date == null) {
@@ -1261,13 +1289,13 @@ function valuesFrom(cells, got, headings) {
 
 function takeImport() {
   if (!pending) return { added: 0, skipped: 0, filled: 0 };
-  var got = pending.picked, fields = cls().fields;
+  var got = pending.picked, fields = cls().fields, kind = pending.kind;
   var added = 0, skipped = 0, filled = 0, mineRow = null;
 
-  /* If a row was named as the subject, it fills the boxes above and is
-     not counted as a sale. */
-  if (pending.mine != null && pending.rows[pending.mine]) {
-    mineRow = pending.mine;
+  /* Fill the subject from the chosen row, for a subject file or a
+     combined one. */
+  if ((kind === 'subject' || kind === 'both') && pending.rows[pending.mine || 0]) {
+    mineRow = pending.mine || 0;
     var cells = pending.rows[mineRow];
     if (got.addr != null && cells[got.addr]) $('#j_addr').value = cells[got.addr];
     var vals = valuesFrom(cells, got, pending.headings);
@@ -1277,25 +1305,26 @@ function takeImport() {
     });
   }
 
-  pending.rows.forEach(function (cells, i) {
-    if (i === mineRow) return;
-    var price = got.price != null ? numOf(cells[got.price]) : null;
-    if (price == null || price <= 0) { skipped++; return; }
+  /* A subject-only file adds nothing to the table. */
+  if (kind !== 'subject') {
+    pending.rows.forEach(function (cells, i) {
+      if (i === mineRow) return;
+      var price = got.price != null ? numOf(cells[got.price]) : null;
+      if (price == null || price <= 0) { skipped++; return; }
 
-    var c = blankComp();
-    c.addr = got.addr != null ? (cells[got.addr] || '') : '';
-    c.price = price;
-    if (got.date != null) { c.dateText = cells[got.date] || ''; c.date = dateOf(c.dateText); }
-    var v = valuesFrom(cells, got, pending.headings);
-    fields.forEach(function (f) { if (v[f.key] != null) c[f.key] = v[f.key]; });
-    comps.push(c); added++;
-  });
-
-  /* Drop any row still left empty so the table isn't padded with blanks. */
-  comps = comps.filter(function (c) { return c.addr || c.price; });
+      var c = blankComp();
+      c.addr = got.addr != null ? (cells[got.addr] || '') : '';
+      c.price = price;
+      if (got.date != null) { c.dateText = cells[got.date] || ''; c.date = dateOf(c.dateText); }
+      var v = valuesFrom(cells, got, pending.headings);
+      fields.forEach(function (f) { if (v[f.key] != null) c[f.key] = v[f.key]; });
+      comps.push(c); added++;
+    });
+    comps = comps.filter(function (c) { return c.addr || c.price; });
+  }
 
   pending = null;
-  return { added: added, skipped: skipped, filled: filled };
+  return { added: added, skipped: skipped, filled: filled, kind: kind };
 }
 
 /* One worked example per kind, so the buttons do something no matter
@@ -1628,11 +1657,13 @@ function start() {
     $('#reviewCard').hidden = true;
     drawRows(); refresh();
     var said = [];
-    if (r.filled) said.push('subject property filled in (' + r.filled + ' fields)');
-    said.push(r.added + ' comparable' + (r.added === 1 ? '' : 's') + ' imported');
+    if (r.filled) said.push('Subject property filled in from ' + r.filled + ' column' +
+      (r.filled === 1 ? '' : 's'));
+    if (r.kind !== 'subject') said.push(r.added + ' comparable sale' + (r.added === 1 ? '' : 's') +
+      ' imported');
     if (r.skipped) said.push(r.skipped + ' row' + (r.skipped === 1 ? '' : 's') +
       ' omitted for having no sale price');
-    $('#saveLine').textContent = said.join(' · ') + '. Check the figures and fill any gaps.';
+    $('#saveLine').textContent = said.join('. ') + '. Check the figures and fill any gaps.';
   });
 
   /* Opening the file straight off the disk sometimes blocks the browser's
