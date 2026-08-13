@@ -1,242 +1,258 @@
 # Working on Comp Sheet
 
-Read this before changing anything. The hard part of this project is not the
-code — it's resisting the urge to make it bigger.
+Read this before changing anything. The difficult part of this project is not the
+code. It is resisting the urge to make it larger.
 
 ## Who uses this
 
-An assistant helping a real estate agent. Someone running property sales out of
+An assistant supporting a real estate agent. Someone running property sales from
 a spare room. Not an analyst, not an appraiser, not a fund.
 
-If a change only makes sense to someone with a finance background, it does not
-belong here. This tool already got built the wrong way once — as an
-institutional appraisal platform of 3,407 lines, with four valuation approaches,
-Proposition 13 reassessment and a statistical reliability grade. It worked. All
-ten of its internal arithmetic checks passed. It was thrown out anyway, because
-it was built for the wrong person. Scoping questions expand scope; they do not
-tell you who sits in front of the thing.
+If a change only makes sense to somebody with a finance background, it does not
+belong here. This tool was already built the wrong way once. The first version
+was an institutional appraisal platform of 3,407 lines with four valuation
+approaches, California Proposition 13 reassessment and a statistical reliability
+grade. It worked and all ten of its internal arithmetic checks passed. It was
+discarded anyway, because it had been built for the wrong person. Scoping
+questions expand scope. They do not establish who will sit in front of the thing.
 
-## Two rules that override everything
+## Two rules that override everything else
 
-**1. Use the vocabulary of the trade, written clearly.**
+### Use the vocabulary of the trade, written clearly
 
-This is a valuation tool. Use the words a CMA or an appraisal uses — *subject
-property, comparable sales, adjustments, elements of comparison, indicated
-value, market conditions, condition, gross adjustment*. An agent's assistant
-reads these every day.
+This is a valuation tool, so it should use the words a CMA or an appraisal uses.
+That means subject property, comparable sales, adjustments, elements of
+comparison, indicated value, market conditions, condition and gross adjustment.
+An agent's assistant reads these terms every working day.
 
-Two failure modes, and this project has hit both:
+There are two ways to get this wrong and this project has managed both.
 
-*Consultant filler* — "dispersion band", "reconcile the indications", "gross
-adjustment burden", "ingest". Words that add ceremony, not meaning.
+The first is consultant filler. Phrases such as dispersion band, reconcile the
+indications, gross adjustment burden and ingest. These add ceremony rather than
+meaning.
 
-*Baby talk* — "Shape" for condition, "nudge" for adjustment, "How we got there"
-for the adjustment detail, "Bring in a file" for import. Writing down to the
-reader is its own kind of disrespect, and it makes the output useless to hand to
-a client.
+The second is writing down to the reader. Using Shape in place of condition,
+nudge in place of adjustment, How we got there in place of the adjustment detail.
+This is its own form of disrespect and it produces output that cannot be handed
+to a client.
 
-| Wrong (either way) | Right |
+| Wrong in either direction | Correct |
 |---|---|
-| Shape · what kind of shape is it in | Condition |
-| nudge · change | adjustment |
-| the house you're pricing | subject property |
+| Shape, what kind of shape is it in | Condition |
+| nudge, change | adjustment |
+| the house you are pricing | subject property |
 | recent houses sold nearby | comparable sales |
 | How we got there | Adjustment detail |
 | Suggested price | Indicated value |
-| Solid / Rough | High confidence / Limited confidence |
+| Solid, Rough | High confidence, Limited confidence |
 | Somewhere between X and Y | Range of value: X to Y |
-| dispersion band, reconcile, ingest | (never) |
+| dispersion band, reconcile, ingest | never |
 
-Adjustment lines are written the way a grid reads — the element being adjusted,
-then how the two properties differ, then the amount:
+Adjustment lines are written the way a grid reads. The element being adjusted
+comes first, then how the two properties differ, then the amount:
 
 ```
-Building area      Subject is 130 square feet smaller      −$14,300
-Market conditions  Sold 5 months ago; market up 3% per year  +$8,480
+Building area      Subject is 130 square feet smaller        -$14,300
+Market conditions  Sold 5 months ago, market up 3% per year   +$8,480
 ```
 
-Full sentences. Professional register. No exclamation marks, no cheerleading,
-and no shortening a real term to sound friendlier.
+Write in full sentences and in a professional register. Avoid em dashes, avoid
+sentence fragments used for emphasis, avoid bold text placed mid sentence for
+effect, and never shorten a real term to make it sound friendlier.
 
-**2. Faster than doing it by hand, or it has no reason to exist.**
+### It must be faster than working by hand
 
-The price updates on every keystroke. There is no Run button and there must
-never be one. Anything that adds a step between typing and seeing the answer is
-a regression.
+The indicated value recalculates on every keystroke. There is no Run button and
+there must never be one. Anything that introduces a step between typing and
+seeing the result is a regression.
 
-## Hard constraints
+## Constraints that cannot be traded away
 
-- **One file.** `comp-sheet.html`. No build step, no bundler, no `npm install`,
-  no dependencies. Someone must be able to double-click it.
-- **No network code. Ever.** No `fetch`, no `XMLHttpRequest`, no WebSocket, no
-  external stylesheets, fonts, images, or scripts. Open it with wifi off and it
-  behaves identically. This is a promise printed on the page — do not break it.
-- **Nothing leaves the machine.** `localStorage` and Blob downloads only.
-- **ES5-flavoured JavaScript.** `var`, `function`, no arrow functions or
-  template literals in the shipped file. It runs off a `file://` path on
-  whatever browser someone happens to have.
+The tool is one file, comp-sheet.html. There is no build step, no bundler, no npm
+install and no dependencies, because somebody has to be able to double-click it.
 
-## How it's put together
+There is no network code of any kind. No fetch, no XMLHttpRequest, no WebSocket,
+no external stylesheets, fonts, images or scripts. Opened with the wifi switched
+off it must behave identically. This is a promise printed on the page and it
+should not be broken.
 
-Everything is data-driven off one table so adding a property kind doesn't mean
+Nothing leaves the machine. Only localStorage and Blob downloads are used.
+
+The JavaScript is written in an ES5 style, using var and function rather than
+arrow functions or template literals, because it runs from a file:// path in
+whatever browser somebody happens to have.
+
+## How it is put together
+
+Everything is driven from one table, so adding a property type does not require
 touching the rendering code.
 
 ```
-CLASSES          the six property kinds; fields + starting dollar amounts
-  └ fields[]     built by F(); each has a `kind` that says how it behaves
-compare()        one sale vs. yours → a list of plain-English nudges
-work()           runs every sale, weights them, produces the answer
-draw*()          render from CLASSES: drawSubject, drawHead, drawRows, drawRates
-snapshot/restore save and reload, including which property kind was active
+CLASSES          the six property types, their fields and starting rates
+  fields[]       built by F(), each carrying a kind that says how it behaves
+compare()        one comparable against the subject, producing adjustment lines
+work()           runs every comparable, weights them, produces the value
+draw*()          renders from CLASSES: drawSubject, drawHead, drawRows, drawRates
+snapshot/restore saving and reloading, including the active property type
 ```
 
-Field `kind` values, and what `compare()` does with each:
+Each field carries a kind, and compare() handles each one differently:
 
-| kind | behaviour |
+| kind | Behaviour |
 |---|---|
-| `size` | the main measurement; worth so much per unit |
-| `land` | lot area; worth so much per **1,000** sq ft |
-| `count` | whole countable things; worth so much each |
-| `age` | year built; worth so much per year newer |
-| `shape` | the 1–5 condition picker |
-| `rent` | never nudges anything; drives the rent multiple only |
+| size | the main measurement, worth a set amount per unit |
+| land | site area, worth a set amount per 1,000 sq ft |
+| count | whole countable items, worth a set amount each |
+| age | year built, worth a set amount per year |
+| shape | the condition picker, poor through excellent |
+| rent | never adjusts anything, drives the rent check only |
 
-### Adding a property kind
+### Adding a property type
 
-Add an entry to `CLASSES`, add its key to `CLASS_ORDER`, add an example to
-`EXAMPLES`. Nothing else. The subject form, table header, rows, settings panel
-and paste instructions all build themselves from it.
+Add an entry to CLASSES, add its key to CLASS_ORDER, and add an example to
+EXAMPLES. Nothing else is required. The subject form, the table headings, the
+rows and the adjustment rates all build themselves from that entry.
 
-`EXAMPLES[kind].mine` and each sale's array must be **in the same order as
-`fields`** — they're matched by index.
+EXAMPLES[type].mine and each sale array must be in the same order as fields,
+because they are matched by position.
 
 ### Teaching it a new column heading
 
-`SYNONYMS` maps a box to the heading names real exports use. Add freely — a name
-that never turns up costs nothing.
+SYNONYMS maps a field to the heading names that real exports use. Names can be
+added freely, since a name that never appears costs nothing.
 
-Matching is exact (100) → whole words (80) → any substring (62), with a small
-bonus for longer names so `Lot Size` beats a bare `Lot`. Then columns are
-assigned strongest-first, one column per box.
+Matching runs exact first at 100, then whole word at 80, then substring at 62,
+with a small bonus for longer names so that Lot Size beats a bare Lot. Columns are
+then assigned strongest first, one column per field.
 
-Two-letter names like `sp`, `fb`, `yb` are safe: they only ever land on an exact
-or whole-word hit, never as a substring. Names of four or more characters also
-match as a substring, so watch those — `lot`, `sf` and `rent` sit inside plenty
-of unrelated headings.
+Two letter names such as sp, fb and yb are safe, because they are only ever
+accepted on an exact or whole word match and never as a substring. Names of four
+characters or more also match as substrings, so those need watching. The names
+lot, sf and rent all sit inside plenty of unrelated headings.
 
-One bug here is worth remembering. Matching used `indexOf` compared against index
-arithmetic, and when `indexOf` returned `-1` for "not found" the arithmetic
-sometimes also produced `-1`, so the comparison passed. Every heading matched
-every synonym of the same character length — `Submarket` was read as the lot
-size because "land area" is also nine characters. It was found by checking *what
-each column mapped to*, not by checking that nothing threw. Test the mapping.
+One bug here is worth remembering. Matching used indexOf compared against index
+arithmetic, and when indexOf returned -1 for "not found" the arithmetic sometimes
+also produced -1, so the comparison passed. Every heading matched every synonym
+of the same character length, which is how Submarket came to be read as the lot
+size, both being nine characters. It was found by checking what each column
+mapped to, not by checking that nothing threw an error. Test the mapping.
 
-Where the line falls, measured against the files in `samples/`:
+Measured against the files in samples:
 
 | Heading in the file | Result |
 |---|---|
-| `Sq. Ft.` `# Beds` `Baths (Full)` `Yr. Built` `Gar.` `Cond.` | matched — punctuation is stripped first |
-| `Situs Addr.` `Close Dt` `Sold $` `RBA` `GLA` `COE` | matched |
-| `MLS #` `LP` `DOM` `Buyer` `Submarket` | correctly left alone |
-| `COL_A` `COL_B` | no match; the import refuses and says why |
+| Sq. Ft., # Beds, Baths (Full), Yr. Built, Gar., Cond. | matched, punctuation is stripped first |
+| Situs Addr., Close Dt, Sold $, RBA, GLA, COE | matched |
+| MLS #, LP, DOM, Buyer, Submarket | correctly left unassigned |
+| COL_A, COL_B | no match, and the import refuses and states why |
 
-Unrecognised headings are never guessed at — they are left unassigned for the
-user to set in the review step.
+Unrecognised headings are never guessed at. They are left unassigned for the user
+to set during the review step.
 
-### Adding a field to an existing kind
+### Adding a field to an existing type
 
-Add one `F(...)` line and a starting amount in that kind's `rates`. If it needs
-behaviour none of the six `kind` values cover, add a branch in `compare()` —
-and write the sentence it produces as a sentence.
+Add one F() line and a starting amount in that type's rates. If it needs
+behaviour that none of the six kinds cover, add a branch in compare(), and write
+the sentence it produces as an actual sentence.
+
+## Why it works the way it does
+
+Adjustments are expressed in dollars rather than percentages. An agent can look
+at twelve thousand dollars for a bathroom and say that it is closer to eight in
+this area. Nobody argues productively with a 4.2% net adjustment. The figures are
+supplied as estimates and require local correction, so they have to be arguable.
+Market conditions is the one exception, because it genuinely is a rate.
+
+Comparables requiring more than 35% gross adjustment are excluded, and the card
+states why. Quietly averaging in a poor comparable produces a confident figure
+built on an irrelevant property, and it is better to lose a data point visibly.
+For the same reason a blank box is omitted from the adjustment rather than filled
+with an assumption.
+
+Weighting is closeness multiplied by freshness, calculated as 1/(1+3 times gross
+adjustment) multiplied by 0.5^(months/18). Requiring little adjustment is what
+comparable means, and an old sale describes an older market. Both curves are
+deliberately gentle, because sharper ones allow a single comparable to dominate
+and the value then swings considerably as sales are added.
+
+The range is the spread of the comparables rather than a confidence interval. An
+earlier version computed a proper standard error using Kish effective sample
+sizes. That was more sophisticated and less honest, because comparables are not a
+random sample of anything and the statistics implied a rigour that was not
+present.
+
+The rent multiple never feeds the indicated value. Blending two methods into one
+figure conceals which one is doing the work. Displayed alongside each other, a
+disagreement between them is visible and useful.
+
+Saving writes the entire page with the data held inside it, rather than producing
+a JSON export. A non technical user knows what to do with a file that opens,
+whereas a JSON file requires the tool, an import step, and knowing that those two
+things belong together. Two details matter in the implementation. The opening
+angle bracket is escaped in the payload so that an address containing a closing
+script tag cannot truncate the file, and any existing data block is removed
+before the new one is added so that repeated saves do not stack copies.
+
+Import opens inside the section it fills. Both buttons previously opened one
+shared panel positioned elsewhere on the page, which read as a single control
+rather than two. Pressing Import beneath Subject property now expands the panel
+inside that card. The button pressed is what the file is for, so there is nothing
+to declare and nothing to select.
 
 ## Testing
 
-There's no test runner. Check it like this:
+There is no test runner. Check the syntax like this:
 
 ```bash
-# syntax
 node -e 'const s=require("fs").readFileSync("comp-sheet.html","utf8");
   require("fs").writeFileSync("/tmp/cs.js",s.split("<script>")[1].split("</script>")[0]);'
 node --check /tmp/cs.js
 ```
 
-Then serve the folder and drive it in a browser. Useful checks, all of which
-have caught real bugs:
+Then serve the folder and drive it in a browser. The following checks have each
+caught a real bug.
 
-- Loop all six kinds calling `switchClass(k); loadExample();` and confirm each
-  gives a different sensible price. **Stub `window.confirm` to return true
-  first** — `switchClass` asks before clearing, and a headless `confirm`
-  returns false, so every kind silently stays residential and every result
-  looks identical. That exact thing happened.
-- `document.querySelector('.sheet').scrollWidth` must be **≤ the `.scroll`
-  container's `clientWidth`** at 1280px wide. The table overflowed by 196px
-  once and hid two columns off-screen.
-- Type into a row and confirm `document.activeElement` is unchanged. `refresh()`
-  must never rebuild `#rows`, or the cursor jumps out mid-word.
-- Save, switch kinds, restore, and confirm the property kind and all fields come
-  back.
-- Import a file whose headings are deliberately awkward — extra columns, a
-  `Submarket` column, acres instead of square feet, conditions as words, an
-  address with a comma in it, and a row with no price. Check what each column
-  matched to, not just that it didn't crash.
+Loop through all six types calling switchClass(k) then loadExample() and confirm
+each produces a different and sensible value. Stub window.confirm to return true
+first, because switchClass asks before clearing and a headless confirm returns
+false, so every type silently remains residential and every result looks
+identical. That is exactly what happened.
 
-## Things that look like improvements and are not
+Confirm that the scrollWidth of .sheet is less than or equal to the clientWidth
+of its .scroll container at 1280 pixels wide. The table once overflowed by 196
+pixels and hid two columns off screen.
 
-- A Run button, a wizard, or steps.
-- Cap rates, DCF, IRR, NPV, price-per-buildable-foot, absorption.
-- Percentage-based adjustments. Agents argue in dollars.
-- Auto-filling a missing field with an assumption. Blank means skipped, and the
-  card says so.
-- Charts. The per-sale cards are the explanation.
-- A backend, accounts, or sync.
+Type into a row and confirm that document.activeElement has not changed.
+refresh() must never rebuild the rows, because the cursor then jumps out mid
+word.
 
-## Why it works the way it does
+Save, switch types, restore, and confirm that the property type and every field
+return correctly.
 
-**Dollar adjustments, not percentages.** An agent can look at "$12,000 a
-bathroom" and say *not around here, it's more like eight*. Nobody argues
-productively with "a 4.2% net adjustment". The numbers ship as guesses and need
-local correction, so they have to be arguable. Market conditions is the one
-exception, because it genuinely is a rate.
+Import a file with deliberately awkward headings, meaning extra columns, a
+Submarket column, acres in place of square feet, conditions written as words, an
+address containing a comma, and a row with no price. Check what each column
+mapped to, not simply that it did not crash.
 
-**Comparables needing more than 35% gross adjustment are excluded**, and the card
-says so. Quietly averaging in a poor comparable produces a confident number built
-on an irrelevant property. Better to lose a data point loudly. Likewise a blank
-box is omitted from the adjustment, never filled with an assumption.
+## Changes that look like improvements and are not
 
-**Weighting is closeness × freshness** — `1/(1+3×gross adjustment)` times
-`0.5^(months/18)`. Requiring little adjustment is what comparable means, and an
-old sale describes an older market. Both curves are deliberately gentle; sharper
-ones let a single comparable dominate and the value swings wildly as sales are
-added.
-
-**The range is the spread of the comparables, not a confidence interval.** An
-earlier version computed a proper standard error with Kish effective sample
-sizes. More sophisticated, less honest: comparables are not a random sample of
-anything, so the statistics implied a rigour that was not there.
-
-**The rent multiple never feeds the indicated value.** Blending two methods into
-one figure hides which is doing the work. Side by side, a disagreement is visible
-and useful.
-
-**Saving writes the whole page with the data inside it**, rather than a `.json`
-export. A non-technical user knows what to do with a file that opens; a JSON file
-needs the tool, an import step, and knowing those two things go together. Two
-details matter: `<` is escaped in the payload so an address containing
-`</script>` cannot truncate the file, and any existing data block is removed
-before the new one is added so re-saving does not stack copies.
-
-**Import opens inside the section it fills.** Both buttons previously opened one
-shared panel elsewhere on the page, which read as a single control. Pressing
-Import under Subject property now expands the panel inside that card. The button
-you press is what the file is for — there is nothing to declare and nothing to
-pick.
+Do not add a Run button, a wizard, or steps. Do not add cap rates, DCF, IRR, NPV,
+price per buildable foot or absorption. Do not convert adjustments to
+percentages, because agents argue in dollars. Do not auto-fill a missing field
+with an assumption, because blank means omitted and the card says so. Do not add
+charts, because the adjustment detail is the explanation. Do not add a backend,
+accounts or sync.
 
 ## Known rough edges
 
-- Below ~1,200px browser width the sales table scrolls sideways. It scrolls
-  cleanly rather than clipping, but stacking each sale into a card on narrow
-  screens would be better.
-- Typing `685000` stays `685000`; it isn't reformatted to `685,000` as you go.
-- Dates are typed by hand — no date picker.
-- The starting dollar amounts are national guesses and are much weaker for the
-  commercial kinds than for residential.
+Below approximately 1,200 pixels of browser width the comparables table scrolls
+sideways. It scrolls cleanly rather than clipping, but stacking each comparable
+into a card on narrow screens would be better.
+
+Typing 685000 leaves it as 685000 rather than reformatting to 685,000 while
+typing.
+
+Dates are typed by hand and there is no date picker.
+
+The supplied adjustment rates are national estimates and are considerably weaker
+for the commercial types than for residential.
