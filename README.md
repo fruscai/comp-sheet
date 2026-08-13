@@ -6,6 +6,14 @@ account, no internet.
 Download [`comp-sheet.html`](comp-sheet.html), double-click it, start typing.
 That's the whole thing.
 
+```bash
+open comp-sheet.html          # macOS
+```
+
+There is no `npm start`, no `npm install`, no build step and no server. There's
+no `package.json` because there's nothing to install — it's one file that opens
+in a browser.
+
 ## What it does
 
 It does what an agent does on paper, just faster.

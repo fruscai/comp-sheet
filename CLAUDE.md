@@ -1,0 +1,138 @@
+# Working on Comp Sheet
+
+Read this before changing anything. The hard part of this project is not the
+code — it's resisting the urge to make it bigger.
+
+## Who uses this
+
+An assistant helping a real estate agent. Someone running property sales out of
+a spare room. Not an analyst, not an appraiser, not a fund.
+
+If a change only makes sense to someone with a finance background, it does not
+belong here. This tool already got built the wrong way once — as an
+institutional appraisal platform — and had to be thrown out. See
+[DECISIONS.md](DECISIONS.md).
+
+## Two rules that override everything
+
+**1. Plain language. Everywhere.**
+
+Not just the screen — the code and its comments too. Say what a thing does in
+the words the user would use.
+
+| Don't | Do |
+|---|---|
+| ingest, parse, coerce, transmute | read, take |
+| reconcile, aggregate | average, add up |
+| dispersion band, confidence interval | how far apart the sales are |
+| gross adjustment burden | how much we had to nudge it |
+| subject property | the house you're pricing / yours |
+| comparable | sale, or the address itself |
+
+Variables and functions follow this too: `theHouse()`, `howLongAgo()`,
+`hasAnything()`, `rememberLater()`. Not `getSubjectEntity()`.
+
+**2. Faster than doing it by hand, or it has no reason to exist.**
+
+The price updates on every keystroke. There is no Run button and there must
+never be one. Anything that adds a step between typing and seeing the answer is
+a regression.
+
+## Hard constraints
+
+- **One file.** `comp-sheet.html`. No build step, no bundler, no `npm install`,
+  no dependencies. Someone must be able to double-click it.
+- **No network code. Ever.** No `fetch`, no `XMLHttpRequest`, no WebSocket, no
+  external stylesheets, fonts, images, or scripts. Open it with wifi off and it
+  behaves identically. This is a promise printed on the page — do not break it.
+- **Nothing leaves the machine.** `localStorage` and Blob downloads only.
+- **ES5-flavoured JavaScript.** `var`, `function`, no arrow functions or
+  template literals in the shipped file. It runs off a `file://` path on
+  whatever browser someone happens to have.
+
+## How it's put together
+
+Everything is data-driven off one table so adding a property kind doesn't mean
+touching the rendering code.
+
+```
+CLASSES          the six property kinds; fields + starting dollar amounts
+  └ fields[]     built by F(); each has a `kind` that says how it behaves
+compare()        one sale vs. yours → a list of plain-English nudges
+work()           runs every sale, weights them, produces the answer
+draw*()          render from CLASSES: drawSubject, drawHead, drawRows, drawRates
+snapshot/restore save and reload, including which property kind was active
+```
+
+Field `kind` values, and what `compare()` does with each:
+
+| kind | behaviour |
+|---|---|
+| `size` | the main measurement; worth so much per unit |
+| `land` | lot area; worth so much per **1,000** sq ft |
+| `count` | whole countable things; worth so much each |
+| `age` | year built; worth so much per year newer |
+| `shape` | the 1–5 condition picker |
+| `rent` | never nudges anything; drives the rent multiple only |
+
+### Adding a property kind
+
+Add an entry to `CLASSES`, add its key to `CLASS_ORDER`, add an example to
+`EXAMPLES`. Nothing else. The subject form, table header, rows, settings panel
+and paste instructions all build themselves from it.
+
+`EXAMPLES[kind].mine` and each sale's array must be **in the same order as
+`fields`** — they're matched by index.
+
+### Adding a field to an existing kind
+
+Add one `F(...)` line and a starting amount in that kind's `rates`. If it needs
+behaviour none of the six `kind` values cover, add a branch in `compare()` —
+and write the sentence it produces as a sentence.
+
+## Testing
+
+There's no test runner. Check it like this:
+
+```bash
+# syntax
+node -e 'const s=require("fs").readFileSync("comp-sheet.html","utf8");
+  require("fs").writeFileSync("/tmp/cs.js",s.split("<script>")[1].split("</script>")[0]);'
+node --check /tmp/cs.js
+```
+
+Then serve the folder and drive it in a browser. Useful checks, all of which
+have caught real bugs:
+
+- Loop all six kinds calling `switchClass(k); loadExample();` and confirm each
+  gives a different sensible price. **Stub `window.confirm` to return true
+  first** — `switchClass` asks before clearing, and a headless `confirm`
+  returns false, so every kind silently stays residential and every result
+  looks identical. That exact thing happened.
+- `document.querySelector('.sheet').scrollWidth` must be **≤ the `.scroll`
+  container's `clientWidth`** at 1280px wide. The table overflowed by 196px
+  once and hid two columns off-screen.
+- Type into a row and confirm `document.activeElement` is unchanged. `refresh()`
+  must never rebuild `#rows`, or the cursor jumps out mid-word.
+- Save, switch kinds, restore, and confirm the property kind and all fields come
+  back.
+
+## Things that look like improvements and are not
+
+- A Run button, a wizard, or steps.
+- Cap rates, DCF, IRR, NPV, price-per-buildable-foot, absorption.
+- Percentage-based adjustments. Agents argue in dollars.
+- Auto-filling a missing field with an assumption. Blank means skipped, and the
+  card says so.
+- Charts. The per-sale cards are the explanation.
+- A backend, accounts, or sync.
+
+## Known rough edges
+
+- Below ~1,200px browser width the sales table scrolls sideways. It scrolls
+  cleanly rather than clipping, but stacking each sale into a card on narrow
+  screens would be better.
+- Typing `685000` stays `685000`; it isn't reformatted to `685,000` as you go.
+- Dates are typed by hand — no date picker.
+- The starting dollar amounts are national guesses and are much weaker for the
+  commercial kinds than for residential.
