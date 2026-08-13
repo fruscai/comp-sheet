@@ -1,1 +1,34 @@
+# assistant and editor config, personal to this machine
+CLAUDE.md
+COMMANDS.md
+.claude/
+.claude.json
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md
+.continue/
+.windsurf/
+AGENTS.md
+GEMINI.md
+.specstory/
+.ai/
+*.prompt.md
+
+# editors
+.idea/
+.vscode/
 .DS_Store
+
+# dependencies and build output
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+*.pyc
+
+# secrets
+.env
+.env.*
+!.env.example
