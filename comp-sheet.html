@@ -199,18 +199,16 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   <button class="primary" id="btnPrint">Print</button>
   <button id="btnSave">Save</button>
   <button id="btnExample">Load example</button>
-  <button id="btnPaste">Import from file</button>
+  <button id="btnPaste">Import CSV</button>
   <button id="btnClear">Clear all</button>
 </div>
 <p class="saveline noprint" id="saveLine"></p>
 
 <!-- IMPORT -->
 <div class="card noprint" id="pasteCard" hidden>
-  <h2>Import from file</h2>
-  <p class="hint">A CoStar export, an MLS download, or anything out of Excel. Drop the file below or
-    paste the rows — the columns can be in any order and extra columns are ignored.</p>
-  <p class="hint">This fills in <strong>both</strong> parts of the page. If the property you're
-    pricing is one of the rows, you can say so and the rest become the sales nearby.</p>
+  <h2>Import from a CSV</h2>
+  <p class="hint">Columns can be in any order and extra columns are ignored. You will see how each
+    column was read before anything is brought in.</p>
 
   <div class="dropbox" id="dropbox">
     <p><strong>Drop a CSV file here</strong></p>
@@ -227,13 +225,23 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
 
 <!-- WHAT WE FOUND -->
 <div class="card noprint" id="reviewCard" hidden>
-  <h2>Confirm how the columns were read</h2>
+  <h2>Confirm how the file was read</h2>
   <p class="hint" id="reviewCount"></p>
 
-  <label class="f" style="max-width:420px;margin-bottom:16px">
-    <span>Is one of these rows the subject property?</span>
+  <div class="note info" style="margin-bottom:16px">
+    <strong>Step 1 — say which row is the property you are valuing.</strong> That row fills in the
+    Subject property section. Every other row is brought in as a comparable sale. If the file holds
+    only sales and the subject is not among them, leave this set to "None".
+  </div>
+  <label class="f" id="pickRow" style="max-width:460px;margin-bottom:20px">
+    <span>Which row is the subject property?</span>
     <select id="whichIsMine"></select>
   </label>
+
+  <div class="note info" style="margin-bottom:12px">
+    <strong>Step 2 — check the columns.</strong> Each column below shows a real value from your file
+    and what it was read as. Correct anything wrong before importing.
+  </div>
 
   <div class="scroll"><table class="sheet" id="reviewTable"></table></div>
   <div class="row" style="margin-top:14px">
@@ -248,6 +256,19 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
   <h2>Property type</h2>
   <p class="hint">Determines which elements of comparison apply and the adjustment rates used.</p>
   <div class="kinds noprint" id="kinds"></div>
+</div>
+
+<!-- IMPORT ENTRY -->
+<div class="card noprint" id="importEntry">
+  <h2>Import from a CSV</h2>
+  <p class="hint">One file fills in both sections below — the subject property and the comparable
+    sales. A CoStar export, an MLS download, or anything saved out of Excel. Columns can be in any
+    order.</p>
+  <div class="row">
+    <button class="primary" id="btnImportMain">Choose a CSV file</button>
+    <span class="tiny">You will be asked which row is the subject property. Every other row becomes a
+      comparable sale. You can also drop a file anywhere on this page.</span>
+  </div>
 </div>
 
 <!-- SUBJECT -->
@@ -273,8 +294,9 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
       <tbody id="rows"></tbody>
     </table>
   </div>
-  <div class="row noprint" style="margin-top:12px">
+  <div class="row noprint" style="margin-top:14px">
     <button id="btnAdd">+ Add another comparable</button>
+    <button id="btnImportHere">Import from a CSV</button>
   </div>
 </div>
 
@@ -813,8 +835,15 @@ function drawRows() {
      look like they're waiting to be filled. */
   if (!comps.length) {
     var span = cls().fields.length + 4;
-    body.appendChild(el('tr', {}, [el('td', { colspan: span, class: 'nothingyet' },
-      ['No comparable sales yet. Import a file, or add one and enter it directly.'])]));
+    body.appendChild(el('tr', {}, [el('td', { colspan: span, class: 'nothingyet' }, [
+      'No comparable sales yet. ',
+      el('button', { class: 'link', onclick: openImport }, ['Import a CSV']),
+      ' or ',
+      el('button', { class: 'link', onclick: function () {
+        comps.push(blankComp()); drawRows(); refresh();
+      } }, ['add one by hand']),
+      '.'
+    ])]));
     $('#btnAdd').textContent = '+ Add a comparable';
     return;
   }
@@ -1119,6 +1148,12 @@ function readLot(v, heading) {
 /* What we read out of the file, held here until you say go. */
 var pending = null;
 
+function openImport() {
+  $('#pasteCard').hidden = false;
+  $('#reviewCard').hidden = true;
+  $('#pasteCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function openFile(file) {
   var fr = new FileReader();
   fr.onload = function () { readFileText(fr.result); };
@@ -1185,10 +1220,11 @@ function drawReview() {
   $('#reviewCount').textContent = pending.rows.length + ' row' + (pending.rows.length === 1 ? '' : 's') +
     ' in the file. ' + got + ' of ' + pending.headings.length + ' columns matched.';
 
-  /* One of the rows might be the property being priced rather than a sale. */
+  /* Which row is the property being valued, if any. */
+  $('#pickRow').hidden = false;
   var mineBox = $('#whichIsMine');
   mineBox.innerHTML = '';
-  mineBox.appendChild(el('option', { value: '' }, ['No — all rows are comparable sales']));
+  mineBox.appendChild(el('option', { value: '' }, ['None — every row is a comparable sale']));
   pending.rows.forEach(function (cells, i) {
     var label = pending.picked.addr != null ? (cells[pending.picked.addr] || '') : '';
     if (!label) label = 'Row ' + (i + 1);
@@ -1224,20 +1260,20 @@ function valuesFrom(cells, got, headings) {
 }
 
 function takeImport() {
-  if (!pending) return 0;
-  var got = pending.picked, fields = cls().fields, added = 0, skipped = 0;
-  var mineRow = null;
+  if (!pending) return { added: 0, skipped: 0, filled: 0 };
+  var got = pending.picked, fields = cls().fields;
+  var added = 0, skipped = 0, filled = 0, mineRow = null;
 
-  /* If you said one row is your property, fill your boxes from it and
-     leave it out of the sales. */
+  /* If a row was named as the subject, it fills the boxes above and is
+     not counted as a sale. */
   if (pending.mine != null && pending.rows[pending.mine]) {
-    var cells = pending.rows[pending.mine];
     mineRow = pending.mine;
+    var cells = pending.rows[mineRow];
     if (got.addr != null && cells[got.addr]) $('#j_addr').value = cells[got.addr];
     var vals = valuesFrom(cells, got, pending.headings);
     fields.forEach(function (f) {
       var box = $('#j_' + f.key);
-      if (box && vals[f.key] != null) box.value = vals[f.key];
+      if (box && vals[f.key] != null) { box.value = vals[f.key]; filled++; }
     });
   }
 
@@ -1250,18 +1286,16 @@ function takeImport() {
     c.addr = got.addr != null ? (cells[got.addr] || '') : '';
     c.price = price;
     if (got.date != null) { c.dateText = cells[got.date] || ''; c.date = dateOf(c.dateText); }
-
     var v = valuesFrom(cells, got, pending.headings);
     fields.forEach(function (f) { if (v[f.key] != null) c[f.key] = v[f.key]; });
     comps.push(c); added++;
   });
 
-  /* Clear out any rows still sitting empty, so the table isn't padded
-     with blanks after an import. */
+  /* Drop any row still left empty so the table isn't padded with blanks. */
   comps = comps.filter(function (c) { return c.addr || c.price; });
 
   pending = null;
-  return { added: added, skipped: skipped };
+  return { added: added, skipped: skipped, filled: filled };
 }
 
 /* One worked example per kind, so the buttons do something no matter
@@ -1547,10 +1581,9 @@ function start() {
     drawRows(); refresh();
   });
 
-  $('#btnPaste').addEventListener('click', function () {
-    $('#pasteCard').hidden = false;
-    $('#pasteCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+  $('#btnImportMain').addEventListener('click', openImport);
+  $('#btnImportHere').addEventListener('click', openImport);
+  $('#btnPaste').addEventListener('click', openImport);
   $('#btnPasteCancel').addEventListener('click', function () {
     $('#pasteCard').hidden = true; $('#pasteBox').value = '';
   });
@@ -1583,7 +1616,7 @@ function start() {
     document.addEventListener(ev, function (e) {
       if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
       stop(e);
-      if (ev === 'drop') { $('#pasteCard').hidden = false; openFile(e.dataTransfer.files[0]); }
+      if (ev === 'drop') { openImport(); openFile(e.dataTransfer.files[0]); }
     });
   });
 
@@ -1594,8 +1627,12 @@ function start() {
     var r = takeImport();
     $('#reviewCard').hidden = true;
     drawRows(); refresh();
-    if (r.skipped) alert('Imported ' + r.added + ' comparable' + (r.added === 1 ? '' : 's') + '. ' +
-      r.skipped + ' row' + (r.skipped === 1 ? ' was' : 's were') + ' omitted for having no sale price.');
+    var said = [];
+    if (r.filled) said.push('subject property filled in (' + r.filled + ' fields)');
+    said.push(r.added + ' comparable' + (r.added === 1 ? '' : 's') + ' imported');
+    if (r.skipped) said.push(r.skipped + ' row' + (r.skipped === 1 ? '' : 's') +
+      ' omitted for having no sale price');
+    $('#saveLine').textContent = said.join(' · ') + '. Check the figures and fill any gaps.';
   });
 
   /* Opening the file straight off the disk sometimes blocks the browser's

@@ -3,6 +3,15 @@
 ## Unreleased
 
 ### Added
+- **One import fills both sections.** The import step asks which row is the
+  subject property; that row fills the Subject property section and every other
+  row is brought in as a comparable sale. If the file holds only sales, leave it
+  set to "None". Reachable from a dedicated Import card above the two sections,
+  from the Comparable sales card, from the top button row, or by dropping a file
+  anywhere on the page.
+- **Sample files** in `samples/` covering the three shapes this has been tested
+  against: a file with the subject included, a comparables-only file with junk
+  columns and a row missing its price, and a tab-separated industrial file.
 - **Import fills the subject property as well as the comparables.** If the
   property being valued is one of the rows in the file, say which and its
   details go into the subject boxes while the remaining rows become comparable

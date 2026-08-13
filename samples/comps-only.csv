@@ -1,0 +1,5 @@
+Address,Submarket,Buyer,Seller,Closed,Sold Price,Square Feet,Yr Built,Beds,Full Bath,Half Bath,Lot SF,Garage,Property Condition,Days On Market
+"22 Birch Road",North End,Smith,Jones,2/10/2026,"$705,000","1,900",2001,3,2,1,"7,400",2,Good,31
+"58 Spruce Way",North End,Patel,Nguyen,9/22/2025,"$664,000","1,780",1994,3,2,0,"6,900",2,Average,52
+"310 Alder Drive",North End,Kim,Davis,5/05/2026,"$798,000","2,240",2009,4,3,0,"8,100",2,Good,18
+"12 Pending Place",North End,,,,,"1,600",1988,3,1,0,"6,000",1,Fair,
