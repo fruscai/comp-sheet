@@ -116,9 +116,23 @@ Matching is exact (100) → whole words (80) → any substring (62), with a smal
 bonus for longer names so `Lot Size` beats a bare `Lot`. Then columns are
 assigned strongest-first, one column per box.
 
-Be careful with short names. `lot`, `sf` and `rent` will match inside longer
-headings. There was already one bug here where every nine-character heading
-matched every nine-character synonym — see DECISIONS.md.
+Two-letter names like `sp`, `fb`, `yb` are safe: they only ever land on an exact
+or whole-word hit, never as a substring. Names of four or more characters also
+match as a substring, so watch those — `lot`, `sf` and `rent` sit inside plenty
+of unrelated headings. There was already one bug here where every nine-character
+heading matched every nine-character synonym; see DECISIONS.md.
+
+Where the line falls, measured against the files in `samples/`:
+
+| Heading in the file | Result |
+|---|---|
+| `Sq. Ft.` `# Beds` `Baths (Full)` `Yr. Built` `Gar.` `Cond.` | matched — punctuation is stripped first |
+| `Situs Addr.` `Close Dt` `Sold $` `RBA` `GLA` `COE` | matched |
+| `MLS #` `LP` `DOM` `Buyer` `Submarket` | correctly left alone |
+| `COL_A` `COL_B` | no match; the import refuses and says why |
+
+Unrecognised headings are never guessed at — they are left unassigned for the
+user to set in the review step.
 
 ### Adding a field to an existing kind
 

@@ -131,6 +131,10 @@ details > .body{padding:0 20px 20px}
 .saveline b{color:var(--green);font-weight:600}
 .saveline button{padding:0;font-size:13.5px}
 
+.inset{border:1px solid var(--blue);border-radius:var(--r);padding:16px 18px;margin:0 0 18px;
+  background:linear-gradient(180deg,#f5f9ff,#fff)}
+.insetTitle{margin:0 0 4px;font-size:15.5px;font-weight:650}
+
 .dropbox{border:2px dashed var(--line);border-radius:var(--r);padding:24px 18px;text-align:center;
   background:#fbfcfe;transition:border-color .15s,background .15s}
 .dropbox.over{border-color:var(--blue);background:var(--blue-soft)}
@@ -204,8 +208,8 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
 <p class="saveline noprint" id="saveLine"></p>
 
 <!-- IMPORT -->
-<div class="card noprint" id="pasteCard" hidden>
-  <h2 id="importTitle">Import</h2>
+<div class="inset noprint" id="pasteCard" hidden>
+  <h3 class="insetTitle" id="importTitle">Import</h3>
   <p class="hint" id="importHint"></p>
   <p class="hint">Columns can be in any order and extra columns are ignored. You will see how each
     column was read before anything is brought in.</p>
@@ -224,8 +228,8 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
 </div>
 
 <!-- WHAT WE FOUND -->
-<div class="card noprint" id="reviewCard" hidden>
-  <h2>Confirm how the file was read</h2>
+<div class="inset noprint" id="reviewCard" hidden>
+  <h3 class="insetTitle">Confirm how the file was read</h3>
   <p class="hint" id="reviewCount"></p>
 
   <div class="note info" id="reviewWhat" style="margin-bottom:16px"></div>
@@ -258,6 +262,7 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
     <button id="btnImportSubject">Import CSV</button>
     <span class="tiny">Drop a file or paste rows. Fills the boxes below.</span>
   </div>
+  <div id="subjectImportSlot"></div>
   <div class="grid g4" style="margin-bottom:12px">
     <label class="f" style="grid-column:span 2"><span>Address</span>
       <input id="j_addr" placeholder="1450 Maple Avenue" /></label>
@@ -275,6 +280,7 @@ textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--
     <button id="btnImportComps">Import CSV</button>
     <span class="tiny">Drop a file or paste rows. Adds a row per sale.</span>
   </div>
+  <div id="compsImportSlot"></div>
   <div class="scroll">
     <table class="sheet">
       <thead><tr id="sheetHead"></tr></thead>
@@ -1011,23 +1017,23 @@ function drawRates() {
    that never turns up costs nothing. */
 var SYNONYMS = {
   addr:  ['address','property address','street address','property name','building name','location','property','building','name','addr','site address'],
-  price: ['sale price','sold price','price','sold for','close price','closing price','transaction price','consideration','sale amount','last sale price','sold','amount'],
-  date:  ['sale date','date sold','close date','closing date','closed','date closed','transaction date','sold date','settlement date','recording date','date recorded','last sale date','close','date'],
+  price: ['sale price','sold price','price','sold for','close price','closing price','transaction price','consideration','sale amount','last sale price','sold','amount','sp','sale amt','sales price','purchase price','sold amount'],
+  date:  ['sale date','date sold','close date','closing date','closed','date closed','transaction date','sold date','settlement date','recording date','date recorded','last sale date','close','date','close dt','sale dt','coe','close of escrow','date of sale','sold on'],
 
-  sqft:  ['building sf','rba','rentable building area','square feet','sq ft','sqft','gla','gross leasable area','living area','building size','total sf','size sf','floor area','sf','size'],
-  beds:  ['bedrooms','beds','bed','br','number of bedrooms','no of bedrooms','bdrms'],
-  full:  ['full baths','full bathrooms','baths full','full ba','full bath'],
-  half:  ['half baths','half bathrooms','baths half','half ba','half bath','powder rooms'],
-  year:  ['year built','yr built','built','year constructed','construction year','date built'],
-  gar:   ['garage spaces','garage','car spaces','garage stalls','covered spaces'],
-  lot:   ['lot sq ft','lot size','lot square feet','land sf','land area','site area','lot area','lot sf','land size','acres','lot'],
-  cond:  ['condition','shape','quality','property condition','building condition'],
-  park:  ['parking spaces','parking','spaces','parking count','number of spaces','stalls'],
+  sqft:  ['building sf','rba','rentable building area','square feet','sq ft','sqft','gla','gross leasable area','living area','building size','total sf','size sf','floor area','sf','size','sq feet','liv area','living sf','livable sf','bldg sf','improved sf','net sf'],
+  beds:  ['bedrooms','beds','bed','br','number of bedrooms','no of bedrooms','bdrms','bd','bds','bdrm','brs','bed rooms'],
+  full:  ['full baths','full bathrooms','baths full','full ba','full bath','fb','fullbaths','baths f'],
+  half:  ['half baths','half bathrooms','baths half','half ba','half bath','powder rooms','hb','halfbaths','baths h'],
+  year:  ['year built','yr built','built','year constructed','construction year','date built','yb','yr blt','yrblt','built year','const yr'],
+  gar:   ['garage spaces','garage','car spaces','garage stalls','covered spaces','gar','gge','garage sp','gar spaces','covered parking'],
+  lot:   ['lot sq ft','lot size','lot square feet','land sf','land area','site area','lot area','lot sf','land size','acres','lot','lot sz','lot size sf','land sq ft','parcel size','site sf'],
+  cond:  ['condition','shape','quality','property condition','building condition','cond','cond rating','qual','quality rating','overall condition'],
+  park:  ['parking spaces','parking','spaces','parking count','number of spaces','stalls','prkg','park spaces','parking stalls'],
   front: ['street frontage','road frontage','frontage','front feet','frontage ft','linear frontage'],
-  height:['clear height','ceiling height','clear ht','max clear height','clear','height'],
-  dock:  ['dock doors','loading doors','loading docks','dock high doors','docks','dh doors','grade doors'],
-  units: ['number of units','unit count','total units','no of units','units'],
-  rent:  ['annual rent','yearly rent','gross rent','scheduled rent','rental income','net operating income','base rent','noi','rent','income']
+  height:['clear height','ceiling height','clear ht','max clear height','clear','height','clr ht','ceiling ht','clear hgt'],
+  dock:  ['dock doors','loading doors','loading docks','dock high doors','docks','dh doors','grade doors','dock hi','doors'],
+  units: ['number of units','unit count','total units','no of units','units','no units','unit ct','door count'],
+  rent:  ['annual rent','yearly rent','gross rent','scheduled rent','rental income','net operating income','base rent','noi','rent','income','gross income','scheduled income','annual income','rent roll','egi']
 };
 
 function tidyHeading(h) {
@@ -1132,15 +1138,23 @@ var importMode = 'comps';        // set by whichever Import CSV button was used
 
 function openImport(which) {
   importMode = (which === 'subject') ? 'subject' : 'comps';
-  $('#importTitle').textContent = importMode === 'subject'
+  var forSubject = importMode === 'subject';
+
+  /* Open inside the section that asked, so it is never ambiguous which
+     half of the page a file is going to. */
+  var slot = $(forSubject ? '#subjectImportSlot' : '#compsImportSlot');
+  slot.appendChild($('#pasteCard'));
+  slot.appendChild($('#reviewCard'));
+
+  $('#importTitle').textContent = forSubject
     ? 'Import the subject property' : 'Import comparable sales';
-  $('#importHint').textContent = importMode === 'subject'
-    ? 'The property being valued. If the file holds more than one row you choose which to use.'
-    : 'Every row with a sale price is added as a comparable. The subject property is left as it is.';
+  $('#importHint').textContent = forSubject
+    ? 'The property being valued. Its details go into the boxes below. Nothing is added to the comparable sales table.'
+    : 'Every row with a sale price becomes a row in the table below. The subject property above is left as it is.';
   $('#pasteCard').hidden = false;
   $('#reviewCard').hidden = true;
-  $('#pasteCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   $('#pasteBox').value = '';
+  $('#pasteCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function openFile(file) {

@@ -8,6 +8,10 @@
   file is for — no separate import screen and nothing to choose. Each accepts a
   dropped file or pasted rows. Importing comparables leaves the subject alone
   and vice versa, so the two can come from separate exports.
+- **Abbreviated headings are recognised.** `Gar.`, `Cond.`, `Sq. Ft.`, `Yr. Blt`,
+  `SP`, `COE`, `Close Dt`, `Bdrms` and similar short forms these exports really
+  use. Two-letter names only match exactly or as a whole word, so they cannot
+  land on an unrelated column.
 - **Sample files** in `samples/` covering the three shapes this has been tested
   against: a file with the subject included, a comparables-only file with junk
   columns and a row missing its price, and a tab-separated industrial file.
