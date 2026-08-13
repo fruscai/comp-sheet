@@ -6,31 +6,22 @@ Nothing entered into it is transmitted anywhere.
 
 ### [Open it](https://fruscai.github.io/comp-sheet/comp-sheet.html)
 
-That link is the entire product. It works in a phone browser as well as on a
-desktop.
-
-To keep a copy locally, download comp-sheet.html and double-click it. It is the
-same file, it works offline, and it will continue working regardless of what
-happens to this repository.
+Single HTML file. Runs in the browser, offline. Download comp-sheet.html and
+double-click it for a local copy.
 
 There is no npm start, no build step, no server and no package.json, because
 there is nothing to install.
 
 ## Start here
 
-Open the link and press Load example. That fills in a completed valuation so the
-output can be seen before anything is entered.
+Load example fills in a completed valuation.
 
-Then open Adjustment rates and enter the figures for the local market. This
-matters more than anything else on the page. The rates supplied are national
-estimates and will be wrong for any specific area, and every figure downstream is
-built on them. Export them to a file once and the work does not need repeating.
+Adjustment rates come first. The supplied rates are national estimates, not local
+ones, and every adjustment is calculated from them. Export them to a file once
+they are set.
 
-After that, import or enter the subject property, then import or enter the
-comparable sales. Press Print for a copy to hand over, or Save to write a file
-that reopens exactly as it was left.
-
-Once the rates are set, a property takes approximately two minutes.
+Then the subject property, then the comparable sales, either imported or entered.
+Print produces a copy. Save writes a file that reopens as it was left.
 
 ## What it does
 
@@ -58,9 +49,8 @@ line by line:
 > | Site area, subject has 174 sq ft less site area | −$522 |
 > | Indicated value | **$677,258** |
 
-This is the part worth having. A seller arriving with a higher figure from a
-listing site can read these lines and argue with them, which is a different
-conversation from being handed a number with no reasoning attached.
+Each line names the element, the difference between the two properties and the
+amount, so the figure can be disputed line by line.
 
 ## Importing from a file
 
@@ -130,12 +120,9 @@ Adjustment rates set what each element of comparison is worth. This covers the
 value of a square foot of building area, of a bathroom, of a year of age, of a
 grade of condition, and the annual rate at which prices are moving.
 
-These are supplied as estimates. They are reasonable nationally and wrong for any
-specific neighbourhood. If comparables consistently land far apart from one
-another, the rates are usually the reason. Someone with local market knowledge
-should set them once. They are less reliable for the commercial types than for
-residential, because office and industrial values vary considerably by submarket
-in a way that a single national figure cannot capture.
+The supplied figures are national estimates. Comparables landing far apart from
+one another is the symptom of rates that do not match the local market. The
+commercial types are estimated more loosely than residential.
 
 Rates can be exported to a file and imported back, so an office can share one
 calibrated set.
@@ -158,10 +145,8 @@ what was on screen, without needing anything installed.
 This is not an appraisal. A lender will not accept it and it is not USPAP
 compliant.
 
-It cannot see that a building backs onto a freeway, that the photographs are
-poor, that there is a lien on the title, or that the market turned last month.
-Two well chosen comparables are worth more than six poor ones. Inspect the
-property and apply your own judgment.
+It reads only the figures entered. Site conditions, title, photographs and any
+market movement since the comparable sales are not among them.
 
 ## Privacy
 

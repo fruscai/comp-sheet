@@ -154,16 +154,12 @@ the sentence it produces as an actual sentence.
 
 ## Why it works the way it does
 
-Adjustments are expressed in dollars rather than percentages. An agent can look
-at twelve thousand dollars for a bathroom and say that it is closer to eight in
-this area. Nobody argues productively with a 4.2% net adjustment. The figures are
-supplied as estimates and require local correction, so they have to be arguable.
-Market conditions is the one exception, because it genuinely is a rate.
+Adjustments are expressed in dollars rather than percentages, so each one can be
+compared against a known local figure and changed. Market conditions is the one
+exception, because it is a rate.
 
-Comparables requiring more than 35% gross adjustment are excluded, and the card
-states why. Quietly averaging in a poor comparable produces a confident figure
-built on an irrelevant property, and it is better to lose a data point visibly.
-For the same reason a blank box is omitted from the adjustment rather than filled
+Comparables requiring more than 35% gross adjustment are excluded and the card
+states the figure. A blank box is omitted from the adjustment rather than filled
 with an assumption.
 
 Weighting is closeness multiplied by freshness, calculated as 1/(1+3 times gross
