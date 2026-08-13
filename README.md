@@ -16,28 +16,32 @@ in a browser.
 
 ## What it does
 
-It does what an agent does on paper, just faster.
+The sales comparison approach, worked the way it is worked on paper — only faster.
 
-1. Takes what each property nearby actually sold for.
-2. Nudges that price up or down for how it differs from yours — bigger, newer,
-   an extra bathroom, more loading doors.
-3. Adjusts for how long ago it sold, if prices have moved since.
-4. Leans hardest on the sales that needed the least nudging, because those are
-   the most similar and the best guide.
-5. Averages what's left. That's the number.
+1. Takes the price each comparable actually sold for.
+2. Adjusts that price for every way the comparable differs from the subject —
+   building area, age, condition, bathrooms, loading doors.
+3. Applies a market conditions adjustment for the time since the sale.
+4. Weights most heavily the comparables that needed the least adjustment, since
+   requiring little adjustment is what being comparable means.
+5. Averages what remains. That is the indicated value.
 
-Then it shows its work in plain sentences, one card per sale:
+Every comparable gets its own adjustment detail:
 
-> **124 Oak Street** — sold for $685,000 five months ago
-> Prices are up about 3% a year since then — **+$8,148**
-> Yours has 130 fewer square feet — **−$14,300**
-> Yours is 2 years older — **−$1,400**
-> Which points to **$676,848**
+> **124 Oak Street** — sold 5 months ago for $685,000 · 29% weight
+>
+> | | |
+> |---|---|
+> | **Market conditions** — sold 5 months ago; market up 3% per year | +$8,480 |
+> | **Building area** — subject is 130 square feet smaller | −$14,300 |
+> | **Age** — subject is 2 years older | −$1,400 |
+> | **Site area** — subject has 174 sq ft less site area | −$522 |
+> | **Indicated value** | **$677,258** |
 
-## Bringing in sales from a file
+## Importing from a file
 
-Drop a CoStar export, an MLS download, or anything saved out of Excel. The
-columns can be in any order, and extra columns are ignored.
+A CoStar export, an MLS download, or anything saved out of Excel. Columns can be
+in any order and extra columns are ignored.
 
 First it asks what is in the file:
 
@@ -75,28 +79,29 @@ Pick one and the boxes change to match.
 | Mixed use | Square feet, units, year, lot, condition, yearly rent |
 | Land | Lot square feet, road frontage |
 
-For anything that earns rent, you also get a second opinion based on what those
-sales went for compared to the rent they bring in:
+For the income-producing types there is also a rent check — what the comparables
+sold for relative to the rent they produce. It never feeds the indicated value;
+it sits beside it as a cross-check:
 
-> Another angle: those 3 sales went for about **9.3 times** the yearly rent they
-> bring in. Yours brings in $420,000 a year, which points to **$3,915,000**.
+> Rent check: those 3 comparables sold at approximately **9.3 times** annual
+> rent. The subject produces $420,000 annually, indicating **$3,915,000**.
 
 ## Keeping your work
 
 Two safety nets, neither of which sends anything anywhere.
 
 - **The browser remembers.** Close the tab by accident and it's all still there
-  when you come back. There's a "Forget it" link if you'd rather it didn't.
-- **Save to a file.** Writes out a copy of the whole page with your numbers
+  when you come back. There is a "Clear it" link if you would rather it did not.
+- **Save.** Writes out a copy of the whole page with your numbers
   tucked inside, named after the address. That file *is* the tool plus your
   data — keep it in a folder, back it up, or email it to someone. They
   double-click it and see exactly what you saw.
 
-## The dollar amounts
+## Adjustment rates
 
-Under "Change the dollar amounts" you'll find what each thing is worth — every
-extra square foot, each bathroom, each year newer, and how fast prices are
-moving.
+Under **Adjustment rates** you set what each element of comparison is worth —
+per square foot of building area, per bathroom, per year of age, per grade of
+condition, and the annual rate of market change.
 
 **These ship as guesses.** They're reasonable nationally and wrong for any
 specific neighborhood. If your sales keep landing far apart, these are usually
@@ -104,8 +109,8 @@ why. Someone who knows the local market should set them once. They're shakier
 for commercial than residential — office and industrial values swing enormously
 by submarket in a way one national number can't capture.
 
-You can save the amounts to a file and load them back, so a whole office can
-share one calibrated set.
+Rates can be exported to a file and imported back, so an office can share one
+calibrated set.
 
 ## What it isn't
 
