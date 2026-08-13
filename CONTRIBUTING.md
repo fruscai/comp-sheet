@@ -1,4 +1,4 @@
-# Working on Comp Sheet
+# Contributing to Comp Sheet
 
 Read this before changing anything. The difficult part of this project is not the
 code. It is resisting the urge to make it larger.

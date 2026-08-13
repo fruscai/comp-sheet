@@ -109,4 +109,4 @@ brackets and a statistical reliability grade. It worked, and all ten of its
 internal arithmetic checks passed.
 
 It was replaced with an 811 line tool aimed at the person who actually uses it.
-The reasoning is in CLAUDE.md and it is the most useful thing in this repository.
+The reasoning is in CONTRIBUTING.md and it is the most useful thing in this repository.
