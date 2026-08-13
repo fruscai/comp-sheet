@@ -1,18 +1,33 @@
 # Comp Sheet
 
-Price a property from recent nearby sales. One HTML file, no install, no
-account, no internet.
+The sales comparison approach in one HTML file. No install, no account, no
+internet, nothing sent anywhere.
 
-Download [`comp-sheet.html`](comp-sheet.html), double-click it, start typing.
-That's the whole thing.
+### **→ [Open it](https://fruscai.github.io/comp-sheet/comp-sheet.html)**
 
-```bash
-open comp-sheet.html          # macOS
-```
+That link is the whole product. Nothing to sign up for. It works on a phone
+browser too.
 
-There is no `npm start`, no `npm install`, no build step and no server. There's
-no `package.json` because there's nothing to install — it's one file that opens
-in a browser.
+Prefer it on your own machine? Download
+[`comp-sheet.html`](comp-sheet.html) and double-click it — same file, works
+offline, works forever.
+
+There is no `npm start`, no build step, no server and no `package.json`, because
+there is nothing to install.
+
+## Start here
+
+1. **Open the link.** Press **Load example** to see a finished valuation before
+   you type anything.
+2. **Set your adjustment rates first.** Open **Adjustment rates** and put in the
+   numbers for your market — what a square foot is worth, what a bathroom is
+   worth, how fast prices are moving. The values it ships with are national
+   guesses and will be wrong for your area. Export them once and you never do it
+   again.
+3. **Import or type the subject property**, then the comparable sales.
+4. **Print, or Save** — Save writes a file that reopens exactly as you left it.
+
+Roughly two minutes per property once the rates are set.
 
 ## What it does
 
@@ -55,7 +70,22 @@ Then it reads the heading row, works out which column is which, and shows you
 every column with a real value beside it and what it made of it. Fix anything
 wrong from a dropdown. Nothing is brought in until you've looked.
 
-Sample files covering all of these are in [`samples/`](samples).
+Sample files are in [`samples/`](samples), including three deliberately awkward
+ones used to test the header matching:
+
+| File | What it is |
+|---|---|
+| `with-subject.csv` | CoStar-style export with the subject in the first row |
+| `comps-only.csv` | MLS-style, junk columns, one row missing its price |
+| `industrial.tsv` | Tab separated, with a rent column |
+| `nasty.csv` | `Sq. Ft.`, `# Beds`, `Gar.`, `Cond.`, `Close Dt`, `Sold $` |
+| `sparse.csv` | Only four columns present |
+| `cryptic.csv` | Meaningless headings — the import refuses and says why |
+
+Against `nasty.csv` it matches 11 of 14 columns and correctly ignores `MLS #`,
+`LP` and `DOM`. Unrecognised headings are never guessed at — they are left for
+you to set. If your export has a heading it misses, that is worth reporting; one
+real header row improves it for everyone.
 
 Acres are converted to square feet, conditions written as words are read as the
 1–5 scale, and rows without a sale price are left out and counted.
@@ -112,7 +142,7 @@ calibrated set.
 
 ## What it isn't
 
-Not an appraisal. A lender will not accept it.
+Not an appraisal. A lender will not accept it, and it is not USPAP compliant.
 
 It can't see that the building backs onto a freeway, that the photos are
 terrible, that there's a lien on it, or that the market turned last month. Two
