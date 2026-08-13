@@ -1,0 +1,1256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Comp Sheet</title>
+<style>
+:root{
+  --ink:#1c2333; --ink-soft:#5a6478; --ink-faint:#8a94a6;
+  --line:#e2e6ee; --line-soft:#eef1f6;
+  --bg:#f7f8fb; --card:#ffffff;
+  --blue:#2f6fd0; --blue-soft:#eaf1fc;
+  --green:#12855f; --green-soft:#e6f5ef;
+  --amber:#a86a12; --amber-soft:#fdf3e3;
+  --red:#c0392b; --red-soft:#fdeceb;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:22px 22px 90px}
+
+h1{font-size:24px;margin:0;letter-spacing:-.3px}
+.sub{color:var(--ink-soft);font-size:15px;margin:3px 0 0}
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  flex-wrap:wrap;margin-bottom:20px}
+.badge{background:var(--green-soft);color:var(--green);border:1px solid #bfe5d5;
+  padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 20px;margin-bottom:16px}
+.card > h2{font-size:17px;margin:0 0 3px;letter-spacing:-.2px}
+.card > .hint{color:var(--ink-soft);font-size:14px;margin:0 0 16px}
+
+.grid{display:grid;gap:12px 14px}
+.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:820px){.g5,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.g5,.g4,.g3{grid-template-columns:1fr}}
+
+label.f{display:block}
+label.f > span{display:block;font-size:13px;color:var(--ink-soft);margin-bottom:4px;font-weight:500}
+input,select{width:100%;background:#fff;border:1px solid var(--line);color:var(--ink);
+  border-radius:8px;padding:9px 11px;font:inherit;font-size:15px}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+input::placeholder{color:#b6bdca}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#8a94a6 50%),
+  linear-gradient(135deg,#8a94a6 50%,transparent 50%);
+  background-position:calc(100% - 16px) 19px,calc(100% - 11px) 19px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
+
+button{background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  padding:9px 15px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{background:#f3f5f9;border-color:#d0d6e2}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.primary:hover{background:#2760b8}
+button.link{border:none;background:none;color:var(--blue);padding:4px 2px;font-weight:600}
+button.link:hover{background:none;text-decoration:underline}
+button.tiny{padding:4px 8px;font-size:13px;color:var(--ink-faint);border:none;background:none}
+button.tiny:hover{color:var(--red);background:none}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* the comps table you type into */
+.sheet{width:100%;border-collapse:collapse}
+/* Headers wrap to two lines so the columns can stay narrow and still read as English. */
+.sheet th{font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-faint);
+  font-weight:700;text-align:left;padding:0 4px 8px;line-height:1.25;vertical-align:bottom}
+.sheet td{padding:3px;vertical-align:middle}
+.sheet input,.sheet select{padding:8px 7px;font-size:14px;border-radius:7px}
+.sheet select{background-position:calc(100% - 13px) 17px,calc(100% - 8px) 17px;padding-right:24px}
+.scroll{overflow-x:auto;margin:0 -20px;padding:0 20px}
+.w-addr{min-width:140px}.w-price{min-width:96px}.w-date{min-width:104px}
+.w-num{min-width:56px}.w-mid{min-width:70px}.w-cond{min-width:104px}
+
+/* the answer */
+.answer{background:linear-gradient(160deg,#2f6fd0,#245ab0);color:#fff;border-radius:var(--r);
+  padding:22px 24px;margin-bottom:16px}
+.answer .lead{font-size:14px;opacity:.85;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.answer .big{font-size:42px;font-weight:750;letter-spacing:-1.2px;margin:4px 0 2px;line-height:1.1}
+.answer .band{font-size:16px;opacity:.92}
+.answer .meta{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.22);
+  display:flex;gap:24px;flex-wrap:wrap;font-size:14px}
+.answer .meta b{display:block;font-size:18px;font-weight:700}
+.answer .meta span{opacity:.82}
+.answer.empty{background:#eef1f6;color:var(--ink-soft)}
+.answer.empty .big{font-size:22px;color:var(--ink);font-weight:650;letter-spacing:-.3px}
+
+.sure{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);
+  padding:5px 12px;border-radius:999px;font-size:13.5px;font-weight:600;margin-top:12px}
+.sure i{width:8px;height:8px;border-radius:50%;background:#fff;display:block}
+
+/* plain-english explanation */
+.why{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fff}
+.why h3{margin:0 0 2px;font-size:15.5px}
+.why .head{color:var(--ink-soft);font-size:14px;margin:0 0 10px}
+.why ul{margin:0;padding:0;list-style:none}
+.why li{display:flex;justify-content:space-between;gap:14px;padding:5px 0;
+  border-bottom:1px dashed var(--line-soft);font-size:14.5px}
+.why li:last-child{border-bottom:none}
+.why li .amt{font-variant-numeric:tabular-nums;font-weight:650;white-space:nowrap}
+.why li .amt.up{color:var(--green)}
+.why li .amt.down{color:var(--red)}
+.why .end{display:flex;justify-content:space-between;gap:14px;margin-top:10px;padding-top:10px;
+  border-top:2px solid var(--line);font-weight:700;font-size:15.5px}
+.why.skip{background:#fafbfd}
+.why.skip h3{color:var(--ink-faint)}
+
+.pill{display:inline-block;background:var(--line-soft);color:var(--ink-soft);
+  padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600}
+.pill.off{background:var(--amber-soft);color:var(--amber)}
+
+details{border:1px solid var(--line);border-radius:var(--r);background:#fff;margin-bottom:16px}
+details > summary{cursor:pointer;padding:15px 20px;font-weight:650;font-size:16px;list-style:none;
+  display:flex;align-items:center;gap:9px}
+details > summary::-webkit-details-marker{display:none}
+details > summary::before{content:"›";color:var(--ink-faint);font-size:20px;transition:transform .15s}
+details[open] > summary::before{transform:rotate(90deg)}
+details > .body{padding:0 20px 20px}
+
+.note{border-radius:9px;padding:11px 14px;font-size:14px;line-height:1.5}
+.note.warn{background:var(--amber-soft);color:#7d4f0c;border:1px solid #f0dcb8}
+.note.info{background:var(--blue-soft);color:#1e4c92;border:1px solid #c9ddf7}
+.note + .note{margin-top:8px}
+.foot{color:var(--ink-faint);font-size:13.5px;line-height:1.6;margin-top:24px}
+
+.saveline{font-size:13.5px;color:var(--ink-faint);margin:0 0 16px;min-height:19px}
+.saveline b{color:var(--green);font-weight:600}
+.saveline button{padding:0;font-size:13.5px}
+
+.kinds{display:flex;gap:8px;flex-wrap:wrap}
+.kinds button{padding:9px 16px;border-radius:999px;font-weight:600;color:var(--ink-soft)}
+.kinds button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.kinds button.on:hover{background:#2760b8}
+
+.rentline{background:var(--blue-soft);border:1px solid #c9ddf7;color:#1e4c92;border-radius:10px;
+  padding:12px 15px;margin:0 0 16px;font-size:14.5px;line-height:1.5}
+.rentline b{font-weight:700}
+
+.reopened{background:var(--green-soft);border:1px solid #bfe5d5;color:#0d6b4d;
+  border-radius:var(--r);padding:13px 16px;margin-bottom:16px;font-size:14.5px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.reopened b{font-weight:700}
+
+textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:8px;padding:10px;
+  font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
+textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+
+@media print{
+  body{background:#fff}
+  .noprint{display:none!important}
+  .answer{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+  .answer .meta{border-top-color:var(--line)}
+  .answer .sure{background:var(--line-soft);color:var(--ink)}
+  .card,.why{border-color:#ccc;break-inside:avoid}
+  details{border:none} details > .body{padding:0}
+  details > summary{padding-left:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>Comp Sheet</h1>
+    <p class="sub">Price a house from recent nearby sales. Fill in the boxes — the price updates as you type.</p>
+  </div>
+  <div class="badge noprint">Stays on this computer · nothing is sent anywhere</div>
+</header>
+
+<div id="reopened" hidden></div>
+
+<!-- THE ANSWER -->
+<div id="answer" class="answer empty">
+  <div class="lead">Suggested price</div>
+  <div class="big">Fill in the house and at least one sale below</div>
+</div>
+
+<p class="rentline" id="rentCheck" hidden></p>
+
+<div class="row noprint" style="margin-bottom:6px">
+  <button class="primary" id="btnPrint">Print this sheet</button>
+  <button id="btnSave">Save to a file</button>
+  <button id="btnExample">See an example</button>
+  <button id="btnPaste">Paste from a spreadsheet</button>
+  <button id="btnClear">Start over</button>
+</div>
+<p class="saveline noprint" id="saveLine"></p>
+
+<!-- PASTE -->
+<div class="card noprint" id="pasteCard" hidden>
+  <h2>Paste from a spreadsheet</h2>
+  <p class="hint">Copy the rows out of Excel or your MLS export and paste them here. Put the columns in
+    this order, one sale per line. A heading row is fine — it gets skipped.</p>
+  <p class="hint"><strong id="pasteOrder"></strong></p>
+  <textarea id="pasteBox" placeholder="124 Oak Street	685000	3/14/2025	1980	3	2	1	1998	2	7200"></textarea>
+  <div class="row" style="margin-top:10px">
+    <button class="primary" id="btnPasteGo">Add these sales</button>
+    <button id="btnPasteCancel">Cancel</button>
+  </div>
+</div>
+
+<!-- KIND -->
+<div class="card">
+  <h2>What kind of property?</h2>
+  <p class="hint">This changes which boxes you get and what a square foot is worth.</p>
+  <div class="kinds noprint" id="kinds"></div>
+</div>
+
+<!-- SUBJECT -->
+<div class="card">
+  <h2 id="subjectTitle">The property you're pricing</h2>
+  <p class="hint" id="subjectHint"></p>
+  <div class="grid g4" style="margin-bottom:12px">
+    <label class="f" style="grid-column:span 2"><span>Address</span>
+      <input id="j_addr" placeholder="1450 Maple Avenue" /></label>
+  </div>
+  <div id="subjectFields"></div>
+</div>
+
+<!-- COMPS -->
+<div class="card">
+  <h2 id="compsTitle">Recent sales nearby</h2>
+  <p class="hint">Three to five sales from the last year, as close by and as similar as you can get.
+    Leave anything you don't know blank — it just gets skipped.</p>
+  <div class="scroll">
+    <table class="sheet">
+      <thead><tr id="sheetHead"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="row noprint" style="margin-top:12px">
+    <button id="btnAdd">+ Add another sale</button>
+  </div>
+</div>
+
+<!-- WHY -->
+<div id="why"></div>
+
+<!-- SETTINGS -->
+<details class="noprint" id="settings">
+  <summary>Change the dollar amounts</summary>
+  <div class="body">
+    <p class="hint" style="margin-top:0">These are the amounts used to compare a sold house to yours.
+      They're reasonable starting points, not gospel — every neighborhood is different. If your
+      comps keep landing far apart, these are usually why.</p>
+    <div class="grid g3" id="rateFields"></div>
+    <div class="row" style="margin-top:14px">
+      <button id="btnResetRates">Put them back to the starting numbers</button>
+      <button id="btnSaveRates">Save these to a file</button>
+      <button id="btnLoadRates">Load from a file</button>
+      <input type="file" id="ratesFile" accept=".json" hidden />
+    </div>
+  </div>
+</details>
+
+<details class="noprint">
+  <summary>How this works, and when not to trust it</summary>
+  <div class="body">
+    <p style="margin-top:0">It does what an agent does on paper, just faster.</p>
+    <ol style="padding-left:20px;line-height:1.7">
+      <li>Takes what each house nearby actually sold for.</li>
+      <li>Nudges that price up or down for how it differs from yours — bigger, newer, an extra
+        bathroom, a nicer kitchen.</li>
+      <li>Adjusts for how long ago it sold, if prices have moved since.</li>
+      <li>Leans hardest on the sales that needed the least nudging, because those are the most
+        similar houses and the best guide.</li>
+      <li>Averages what's left. That's the number.</li>
+    </ol>
+    <div class="note warn" style="margin-top:14px"><strong>This is a starting point, not an
+      appraisal.</strong> It can't see that the house backs onto a freeway, that the photos are
+      terrible, that there's a lien on it, or that the neighborhood turned last month. A lender will
+      not accept it. Walk the house and use your judgment.</div>
+    <div class="note info"><strong>Garbage in, garbage out.</strong> Sales from a different school
+      district or more than a year old will pull the number in the wrong direction. Two great comps
+      beat six mediocre ones.</div>
+
+    <h3 style="font-size:15.5px;margin:20px 0 6px">Keeping your work</h3>
+    <p style="margin:0 0 10px">Two things happen so you never lose an afternoon of typing.</p>
+    <ul style="padding-left:20px;line-height:1.7;margin:0">
+      <li>This computer quietly remembers what you typed. Close the tab, knock the power out, come
+        back tomorrow — it's still there. You can wipe it with "Forget it" or "Start over".</li>
+      <li><strong>Save to a file</strong> writes out a copy of this whole page with your numbers
+        tucked inside. It's an ordinary file you can keep in a folder, back up, or email to someone.
+        They double-click it and see exactly what you saw — no install, no account, no internet.
+        Every saved sheet is a complete working copy of this tool.</li>
+    </ul>
+    <p style="margin:10px 0 0;color:var(--ink-soft)">Neither one sends anything anywhere.</p>
+  </div>
+</details>
+
+<p class="foot">Comp Sheet — a calculator, not an appraisal. Everything you type stays in this browser
+  tab and disappears when you close it. Nothing is uploaded, saved to a server, or shared.</p>
+
+</div>
+
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────────────────────────
+   The kinds of property, and what matters for each one.
+
+   The method never changes: take what similar places sold for,
+   nudge each one for how it differs, lean on the closest matches.
+   All that changes here is which boxes you get and what a square
+   foot is worth.
+
+   Each box says how it behaves:
+     size   — the main measurement, worth so much per unit
+     land   — lot area, worth so much per 1,000 sq ft
+     count  — a whole thing you can count, worth so much each
+     age    — year built, worth so much per year newer
+     shape  — the 1-to-5 condition picker
+     rent   — not used to nudge anything; drives the rent check
+   ───────────────────────────────────────────────────────────── */
+
+function F(key, head, label, kind, rate, rateLabel, one, many, hint) {
+  return { key: key, head: head, label: label, kind: kind, rate: rate,
+           rateLabel: rateLabel, one: one, many: many, hint: hint };
+}
+
+var CLASSES = {
+  residential: {
+    label: 'Residential', thing: 'house', things: 'houses',
+    sizeKey: 'sqft', sizeWord: 'square foot',
+    fields: [
+      F('sqft','Sq ft','Square feet','size','sqft','Every extra square foot','square foot','square feet','1,850'),
+      F('beds','Beds','Bedrooms','count','bed','Each bedroom','bedroom','bedrooms','3'),
+      F('full','Full baths','Full baths','count','full','Each full bathroom','full bathroom','full bathrooms','2'),
+      F('half','Half baths','Half baths','count','half','Each half bathroom','half bathroom','half bathrooms','1'),
+      F('year','Year built','Year built','age','year','Each year newer',null,null,'1996'),
+      F('gar','Garage','Garage spaces','count','gar','Each garage space','garage space','garage spaces','2'),
+      F('lot','Lot sq ft','Lot square feet','land','lot','Every 1,000 sq ft of extra lot',null,null,'7,000'),
+      F('cond','Shape','What kind of shape is it in?','shape','cond','Each step better in shape',null,null,null)
+    ],
+    rates: { sqft:110, bed:9000, full:12000, half:6000, year:700, gar:8000, lot:3000, cond:15000, market:3.0 }
+  },
+
+  office: {
+    label: 'Office', thing: 'building', things: 'buildings',
+    sizeKey: 'sqft', sizeWord: 'square foot',
+    fields: [
+      F('sqft','Sq ft','Square feet','size','sqft','Every extra square foot','square foot','square feet','12,500'),
+      F('year','Year built','Year built','age','year','Each year newer',null,null,'2004'),
+      F('park','Parking','Parking spaces','count','park','Each parking space','parking space','parking spaces','40'),
+      F('lot','Lot sq ft','Lot square feet','land','lot','Every 1,000 sq ft of extra lot',null,null,'22,000'),
+      F('cond','Shape','What kind of shape is it in?','shape','cond','Each step better in shape',null,null,null),
+      F('rent','Yearly rent','Yearly rent it brings in','rent',null,null,null,null,'240,000')
+    ],
+    rates: { sqft:180, year:1200, park:6000, lot:2000, cond:25000, market:0 }
+  },
+
+  retail: {
+    label: 'Retail', thing: 'property', things: 'properties',
+    sizeKey: 'sqft', sizeWord: 'square foot',
+    fields: [
+      F('sqft','Sq ft','Square feet','size','sqft','Every extra square foot','square foot','square feet','6,400'),
+      F('year','Year built','Year built','age','year','Each year newer',null,null,'1998'),
+      F('front','Frontage','Feet of street frontage','count','front','Each foot of street frontage','foot of street frontage','feet of street frontage','80'),
+      F('park','Parking','Parking spaces','count','park','Each parking space','parking space','parking spaces','25'),
+      F('lot','Lot sq ft','Lot square feet','land','lot','Every 1,000 sq ft of extra lot',null,null,'18,000'),
+      F('cond','Shape','What kind of shape is it in?','shape','cond','Each step better in shape',null,null,null),
+      F('rent','Yearly rent','Yearly rent it brings in','rent',null,null,null,null,'185,000')
+    ],
+    rates: { sqft:200, year:1200, front:500, park:5000, lot:3000, cond:25000, market:1.0 }
+  },
+
+  industrial: {
+    label: 'Industrial', thing: 'building', things: 'buildings',
+    sizeKey: 'sqft', sizeWord: 'square foot',
+    fields: [
+      F('sqft','Sq ft','Square feet','size','sqft','Every extra square foot','square foot','square feet','48,000'),
+      F('year','Year built','Year built','age','year','Each year newer',null,null,'2010'),
+      F('height','Ceiling ht','Ceiling height in feet','count','height','Each foot of ceiling height','foot of ceiling height','feet of ceiling height','28'),
+      F('dock','Loading doors','Loading doors','count','dock','Each loading door','loading door','loading doors','8'),
+      F('lot','Lot sq ft','Lot square feet','land','lot','Every 1,000 sq ft of extra lot',null,null,'96,000'),
+      F('cond','Shape','What kind of shape is it in?','shape','cond','Each step better in shape',null,null,null),
+      F('rent','Yearly rent','Yearly rent it brings in','rent',null,null,null,null,'420,000')
+    ],
+    rates: { sqft:95, year:800, height:3000, dock:12000, lot:1500, cond:20000, market:4.0 }
+  },
+
+  mixed: {
+    label: 'Mixed use', thing: 'building', things: 'buildings',
+    sizeKey: 'sqft', sizeWord: 'square foot',
+    fields: [
+      F('sqft','Sq ft','Square feet','size','sqft','Every extra square foot','square foot','square feet','9,200'),
+      F('units','Units','How many units','count','unit','Each unit','unit','units','6'),
+      F('year','Year built','Year built','age','year','Each year newer',null,null,'1974'),
+      F('lot','Lot sq ft','Lot square feet','land','lot','Every 1,000 sq ft of extra lot',null,null,'5,400'),
+      F('cond','Shape','What kind of shape is it in?','shape','cond','Each step better in shape',null,null,null),
+      F('rent','Yearly rent','Yearly rent it brings in','rent',null,null,null,null,'310,000')
+    ],
+    rates: { sqft:160, unit:25000, year:1000, lot:2500, cond:25000, market:2.0 }
+  },
+
+  land: {
+    label: 'Land', thing: 'lot', things: 'lots',
+    sizeKey: 'lot', sizeWord: 'square foot of land',
+    fields: [
+      F('lot','Lot sq ft','Lot square feet','size','landsf','Every square foot of land','square foot of land','square feet of land','43,560'),
+      F('front','Frontage','Feet of road frontage','count','front','Each foot of road frontage','foot of road frontage','feet of road frontage','150')
+    ],
+    rates: { landsf:25, front:400, market:2.0 }
+  }
+};
+
+var CLASS_ORDER = ['residential','office','retail','industrial','mixed','land'];
+
+var className = 'residential';
+function cls() { return CLASSES[className]; }
+function startingRates() {
+  var out = {};
+  for (var k in cls().rates) out[k] = cls().rates[k];
+  return out;
+}
+
+var rates = startingRates();
+var comps = [];
+var nextId = 1;
+
+/* ── small helpers ── */
+var $ = function (s) { return document.querySelector(s); };
+function el(tag, attrs, kids) {
+  var n = document.createElement(tag);
+  for (var k in (attrs || {})) {
+    if (k === 'class') n.className = attrs[k];
+    else if (k === 'text') n.textContent = attrs[k];
+    else if (k === 'html') n.innerHTML = attrs[k];
+    else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] === true) n.setAttribute(k, '');
+    else if (attrs[k] != null && attrs[k] !== false) n.setAttribute(k, attrs[k]);
+  }
+  (kids || []).forEach(function (c) {
+    if (c == null || c === false) return;
+    n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return n;
+}
+
+/* Read a number out of a box. Handles $, commas, and blanks. */
+function numOf(v) {
+  if (v == null) return null;
+  var s = String(v).trim().replace(/[$,\s]/g, '');
+  if (!s) return null;
+  var n = parseFloat(s);
+  return isFinite(n) ? n : null;
+}
+function dollars(n) {
+  if (n == null || !isFinite(n)) return '—';
+  return (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString('en-US');
+}
+function signed(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + '$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
+function roundTo(n, step) { return Math.round(n / step) * step; }
+
+/* Dates: accept 3/14/2025, 2025-03-14, or "March 2025". */
+var MONTHS = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11 };
+function dateOf(v) {
+  if (!v) return null;
+  var s = String(v).trim(), m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return new Date(+m[1], +m[2] - 1, +m[3]);
+  if ((m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/))) {
+    var y = +m[3]; if (y < 100) y += 2000;
+    return new Date(y, +m[1] - 1, +m[2]);
+  }
+  if ((m = s.match(/^([a-z]{3})[a-z]*[\s,\-]+(\d{4})$/i))) {
+    var mo = MONTHS[m[1].toLowerCase()];
+    if (mo != null) return new Date(+m[2], mo, 15);
+  }
+  var d = new Date(s);
+  return isFinite(d.getTime()) ? d : null;
+}
+function monthsAgo(d) {
+  if (!d) return null;
+  return (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000) * 12;
+}
+function howLongAgo(months) {
+  if (months == null) return 'date unknown';
+  var m = Math.round(months);
+  if (m < 1) return 'this month';
+  if (m === 1) return 'last month';
+  if (m < 12) return m + ' months ago';
+  var y = Math.round(months / 12 * 10) / 10;
+  return y === 1 ? 'a year ago' : y + ' years ago';
+}
+var SHAPE = ['', 'needs a lot of work', 'dated but livable', 'average', 'nicely updated', 'like new'];
+
+/* ─────────────────────────────────────────────────────────────
+   The property being priced
+   ───────────────────────────────────────────────────────────── */
+function theHouse() {
+  var h = { addr: $('#j_addr').value.trim() };
+  cls().fields.forEach(function (f) {
+    var box = $('#j_' + f.key);
+    h[f.key] = box ? numOf(box.value) : null;
+  });
+  return h;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Compare one sold property to yours.
+
+   Everything moves the SOLD price toward what YOURS should get.
+   If the sold one is bigger, we take money off, because yours is
+   smaller and shouldn't get credit for space it hasn't got. Same
+   idea for every line.
+   ───────────────────────────────────────────────────────────── */
+function compare(house, c) {
+  var out = { comp: c, changes: [], sold: c.price, adjusted: null, skip: null };
+  var C = cls(), sizeKey = C.sizeKey;
+
+  if (c.price == null || c.price <= 0) { out.skip = 'no sale price yet'; return out; }
+  if (house[sizeKey] == null || house[sizeKey] <= 0) {
+    var need = C.fields.filter(function (f) { return f.key === sizeKey; })[0];
+    out.skip = 'need the ' + need.label.toLowerCase() + ' of yours first';
+    return out;
+  }
+
+  var running = c.price;
+
+  /* Time since it sold */
+  var months = monthsAgo(c.date);
+  out.months = months;
+  if (months != null && Math.abs(rates.market) > 0.001) {
+    var change = running * (Math.pow(1 + rates.market / 100, months / 12) - 1);
+    if (Math.abs(change) >= 250) {
+      out.changes.push({
+        why: 'Prices are ' + (rates.market > 0 ? 'up' : 'down') + ' about ' +
+             Math.abs(rates.market) + '% a year since then',
+        amt: change
+      });
+      running += change;
+    }
+  }
+
+  /* One line per box, worded so it reads like a sentence. */
+  function add(why, amt) {
+    if (Math.abs(amt) < 250) return;
+    out.changes.push({ why: why, amt: amt });
+    running += amt;
+  }
+
+  C.fields.forEach(function (f) {
+    var theirs = c[f.key], mine = house[f.key];
+    if (f.kind === 'rent' || theirs == null || mine == null) return;
+    var per = rates[f.rate];
+    if (per == null) return;
+    var diff = mine - theirs;                       // positive means yours has more
+    if (Math.abs(diff) < 0.0001) return;
+
+    if (f.kind === 'size' || f.kind === 'count') {
+      var n = Math.abs(diff);
+      add('Yours has ' + n.toLocaleString() + ' ' + (diff > 0 ? 'more ' : 'fewer ') +
+          (n === 1 ? f.one : f.many), diff * per);
+
+    } else if (f.kind === 'land') {
+      add('Yours sits on ' + Math.abs(Math.round(diff)).toLocaleString() + ' sq ft ' +
+          (diff > 0 ? 'more' : 'less') + ' land', (diff / 1000) * per);
+
+    } else if (f.kind === 'age') {
+      var yrs = Math.abs(diff);
+      if (yrs < 1) return;
+      add('Yours is ' + yrs + ' year' + (yrs === 1 ? '' : 's') + (diff > 0 ? ' newer' : ' older'),
+          diff * per);
+
+    } else if (f.kind === 'shape') {
+      add('That one is ' + SHAPE[theirs] + ', yours is ' + SHAPE[mine], diff * per);
+    }
+  });
+
+  out.adjusted = running;
+
+  /* How much did we have to move it? A sale we barely touched is a
+     better guide than one we had to shove around. */
+  var moved = out.changes.reduce(function (s, x) { return s + Math.abs(x.amt); }, 0);
+  out.movedPct = c.price > 0 ? moved / c.price : 1;
+  out.tooFar = out.movedPct > 0.35;
+
+  /* Weight: similar houses count more, recent sales count more. */
+  var closeness = 1 / (1 + 3 * out.movedPct);
+  var freshness = months == null ? 0.6 : Math.pow(0.5, Math.max(0, months) / 18);
+  out.weight = out.tooFar ? 0 : closeness * freshness;
+  return out;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   The answer
+   ───────────────────────────────────────────────────────────── */
+function work() {
+  var house = theHouse();
+  var results = comps.map(function (c) { return compare(house, c); });
+  var used = results.filter(function (r) { return r.weight > 0 && r.adjusted != null; });
+
+  var out = { house: house, results: results, used: used, price: null };
+  if (!used.length) return out;
+
+  var total = used.reduce(function (s, r) { return s + r.weight; }, 0);
+  used.forEach(function (r) { r.share = r.weight / total; });
+
+  var avg = used.reduce(function (s, r) { return s + r.weight * r.adjusted; }, 0) / total;
+  out.raw = avg;
+  out.price = roundTo(avg, 5000);
+
+  var values = used.map(function (r) { return r.adjusted; });
+  out.low = Math.min.apply(null, values);
+  out.high = Math.max.apply(null, values);
+
+  /* How far apart are the comps? That is the honest range. */
+  var spread = avg > 0 ? (out.high - out.low) / avg : 1;
+  out.spread = spread;
+  var pad = Math.max(0.03, Math.min(0.12, spread / 2));
+  out.bandLow = roundTo(avg * (1 - pad), 5000);
+  out.bandHigh = roundTo(avg * (1 + pad), 5000);
+
+  var avgMoved = used.reduce(function (s, r) { return s + r.movedPct; }, 0) / used.length;
+  out.avgMoved = avgMoved;
+
+  /* Rent check. For anything that earns rent, what a place sells for
+     compared to the rent it brings in is a quick second opinion. */
+  if (cls().fields.some(function (f) { return f.kind === 'rent'; })) {
+    var withRent = used.filter(function (r) { return r.comp.rent > 0 && r.comp.price > 0; });
+    if (withRent.length >= 2) {
+      var mult = withRent.reduce(function (s, r) { return s + r.comp.price / r.comp.rent; }, 0) / withRent.length;
+      out.rent = { multiple: mult, count: withRent.length,
+                   value: house.rent > 0 ? roundTo(house.rent * mult, 5000) : null };
+    }
+  }
+
+  if (used.length >= 3 && spread <= 0.10 && avgMoved <= 0.15) {
+    out.sure = 'Solid'; out.sureWhy = 'Several similar sales that agree with each other.';
+  } else if (used.length >= 2 && spread <= 0.20) {
+    out.sure = 'Reasonable'; out.sureWhy = 'The sales mostly agree. A couple more would help.';
+  } else if (used.length >= 2) {
+    out.sure = 'Rough'; out.sureWhy = 'These sales disagree quite a bit. Treat this as a wide guess.';
+  } else {
+    out.sure = 'Very rough'; out.sureWhy = 'Only one sale to go on. Find two or three more.';
+  }
+  return out;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Drawing the screen
+   ───────────────────────────────────────────────────────────── */
+function blankComp() {
+  var c = { id: nextId++, addr: '', price: null, date: null, dateText: '' };
+  cls().fields.forEach(function (f) { c[f.key] = null; });
+  return c;
+}
+
+/* The shape picker, used on both the property and every sale. */
+function shapePicker(value, onPick, short) {
+  var s = el('select', { onchange: function (e) { onPick(numOf(e.target.value)); } });
+  s.appendChild(el('option', { value: '' }, ['—']));
+  [[1, 'Needs a lot of work', 'Needs work'], [2, 'Dated but usable', 'Dated'],
+   [3, 'Average for the area', 'Average'], [4, 'Nicely updated', 'Updated'],
+   [5, 'Like new', 'Like new']].forEach(function (o) {
+    s.appendChild(el('option', { value: o[0], selected: value === o[0] }, [short ? o[2] : o[1]]));
+  });
+  return s;
+}
+
+/* ── the property-kind buttons ── */
+function drawKinds() {
+  var host = $('#kinds');
+  host.innerHTML = '';
+  CLASS_ORDER.forEach(function (k) {
+    host.appendChild(el('button', {
+      class: k === className ? 'on' : '',
+      onclick: function () { switchClass(k); }
+    }, [CLASSES[k].label]));
+  });
+}
+
+/* Changing kind changes the boxes, so anything typed into a box the new
+   kind doesn't have quietly stops counting. Warn before throwing it away. */
+function switchClass(k) {
+  if (k === className) return;
+  if (hasAnything() && !confirm('Switch to ' + CLASSES[k].label +
+      '?\n\nThe boxes change, so anything that does not carry over will be cleared.')) return;
+  className = k;
+  rates = startingRates();
+  comps = comps.map(function (old) {
+    var c = blankComp();
+    c.addr = old.addr; c.price = old.price;
+    c.dateText = old.dateText; c.date = old.date;
+    cls().fields.forEach(function (f) { if (old[f.key] != null) c[f.key] = old[f.key]; });
+    return c;
+  });
+  while (comps.length < 3) comps.push(blankComp());
+  drawKinds(); drawSubject(); drawHead(); drawRows(); drawRates(); refresh();
+}
+
+/* ── the property's own boxes ── */
+function drawSubject() {
+  var C = cls();
+  $('#subjectTitle').textContent = 'The ' + C.thing + " you're pricing";
+  var main = C.fields.filter(function (f) { return f.key === C.sizeKey; })[0];
+  $('#subjectHint').textContent = 'You only really need the ' + main.label.toLowerCase() +
+    '. The rest makes the answer better.';
+  $('#compsTitle').textContent = 'Recent ' + C.things + ' sold nearby';
+
+  var host = $('#subjectFields');
+  host.innerHTML = '';
+  var grid = el('div', { class: 'grid g4' });
+  C.fields.forEach(function (f) {
+    var input;
+    if (f.kind === 'shape') {
+      input = shapePicker(3, function (v) { host.dataset[f.key] = v; refresh(); });
+      input.id = 'j_' + f.key;
+      input.value = '3';
+      input.addEventListener('change', refresh);
+    } else {
+      input = el('input', { id: 'j_' + f.key, inputmode: 'decimal', placeholder: f.hint || '',
+        oninput: refresh });
+    }
+    grid.appendChild(el('label', { class: 'f' }, [el('span', { text: f.label }), input]));
+  });
+  host.appendChild(grid);
+}
+
+/* ── the sales table header ── */
+function drawHead() {
+  var order = ['Address', 'Sold for', 'Date sold'].concat(
+    cls().fields.map(function (f) { return f.label.replace(/\?$/, ''); }));
+  $('#pasteOrder').textContent = order.join(' · ');
+
+  var head = $('#sheetHead');
+  head.innerHTML = '';
+  head.appendChild(el('th', { class: 'w-addr', text: 'Address' }));
+  head.appendChild(el('th', { class: 'w-price', text: 'Sold for' }));
+  head.appendChild(el('th', { class: 'w-date', text: 'Date sold' }));
+  cls().fields.forEach(function (f) {
+    var w = f.kind === 'shape' ? 'w-cond'
+      : (f.kind === 'count' && f.key !== 'park') ? 'w-num' : 'w-mid';
+    head.appendChild(el('th', { class: w, text: f.head }));
+  });
+  head.appendChild(el('th', { class: 'noprint' }));
+}
+
+function drawRows() {
+  var body = $('#rows');
+  body.innerHTML = '';
+  comps.forEach(function (c) {
+    function box(key, width, ph, isText) {
+      return el('input', {
+        class: width, placeholder: ph || '',
+        value: key === 'date' ? c.dateText : (c[key] == null ? '' : c[key]),
+        oninput: function (e) {
+          var v = e.target.value;
+          if (key === 'date') { c.dateText = v; c.date = dateOf(v); }
+          else if (isText) { c[key] = v; }
+          else { c[key] = numOf(v); }
+          refresh();
+        }
+      });
+    }
+
+    var tr = el('tr', {}, [
+      el('td', {}, [box('addr', 'w-addr', '124 Oak Street', true)]),
+      el('td', {}, [box('price', 'w-price', '685,000')]),
+      el('td', {}, [box('date', 'w-date', '3/14/2025')])
+    ]);
+
+    cls().fields.forEach(function (f) {
+      var cell;
+      if (f.kind === 'shape') {
+        cell = shapePicker(c[f.key], function (v) { c[f.key] = v; refresh(); }, true);
+      } else {
+        var w = (f.kind === 'count' && f.key !== 'park') ? 'w-num' : 'w-mid';
+        cell = box(f.key, w, f.hint || '');
+      }
+      tr.appendChild(el('td', {}, [cell]));
+    });
+
+    tr.appendChild(el('td', { class: 'noprint' }, [el('button', {
+      class: 'tiny', title: 'Remove this sale',
+      onclick: function () { comps = comps.filter(function (x) { return x !== c; }); drawRows(); refresh(); }
+    }, ['✕'])]));
+    body.appendChild(tr);
+  });
+}
+
+function drawAnswer(r) {
+  var box = $('#answer');
+  box.innerHTML = '';
+  if (r.price == null) {
+    box.className = 'answer empty';
+    var msg = !r.house.sqft ? 'Add the square feet of your house'
+      : !comps.some(function (c) { return c.price; }) ? 'Add at least one sale below'
+      : 'Every sale so far is too different to use — check the notes below';
+    box.appendChild(el('div', { class: 'lead', text: 'Suggested price' }));
+    box.appendChild(el('div', { class: 'big', text: msg }));
+    return;
+  }
+  box.className = 'answer';
+  box.appendChild(el('div', { class: 'lead', text: 'Suggested price' }));
+  box.appendChild(el('div', { class: 'big', text: dollars(r.price) }));
+  box.appendChild(el('div', { class: 'band',
+    text: 'Somewhere between ' + dollars(r.bandLow) + ' and ' + dollars(r.bandHigh) }));
+  box.appendChild(el('div', { class: 'sure' }, [el('i'), r.sure + ' — ' + r.sureWhy]));
+
+  var meta = el('div', { class: 'meta' });
+  function bit(label, value) {
+    meta.appendChild(el('div', {}, [el('b', { text: value }), el('span', { text: label })]));
+  }
+  bit('sales used', String(r.used.length));
+  var size = r.house[cls().sizeKey];
+  if (size) bit('per ' + cls().sizeWord, dollars(r.price / size));
+  bit('typical nudge per sale', Math.round(r.avgMoved * 100) + '%');
+  box.appendChild(meta);
+}
+
+/* The rent second opinion, shown just under the answer. */
+function drawRentCheck(r) {
+  var host = $('#rentCheck');
+  host.innerHTML = '';
+  if (!r.rent) { host.hidden = true; return; }
+  var m = r.rent.multiple.toFixed(1);
+  var txt = 'Another angle: those ' + r.rent.count + ' sales went for about <b>' + m +
+            ' times</b> the yearly rent they bring in. ';
+  if (r.rent.value != null) {
+    txt += 'Yours brings in ' + dollars(r.house.rent) + ' a year, which points to <b>' +
+           dollars(r.rent.value) + '</b>.';
+    var gap = r.price > 0 ? Math.abs(r.rent.value - r.price) / r.price : 0;
+    if (gap > 0.15) txt += ' That is a fair way off the price above — worth working out which one you trust.';
+  } else {
+    txt += 'Fill in the yearly rent for yours and you will get a second opinion on the price.';
+  }
+  host.innerHTML = txt;
+  host.hidden = false;
+}
+
+function drawWhy(r) {
+  var host = $('#why');
+  host.innerHTML = '';
+  if (!comps.length) return;
+
+  host.appendChild(el('h2', { style: 'font-size:18px;margin:22px 0 12px' , text: 'How we got there' }));
+
+  r.results.forEach(function (res) {
+    var c = res.comp;
+    var name = c.addr || 'That sale';
+    if (res.skip) {
+      host.appendChild(el('div', { class: 'why skip' }, [
+        el('h3', { text: name }),
+        el('p', { class: 'head', text: 'Not counted — ' + res.skip })
+      ]));
+      return;
+    }
+    var card = el('div', { class: 'why' });
+    card.appendChild(el('h3', {}, [
+      name, ' ',
+      res.weight === 0 ? el('span', { class: 'pill off', text: 'not counted' })
+        : el('span', { class: 'pill', text: Math.round((res.share || 0) * 100) + '% of the answer' })
+    ]));
+    card.appendChild(el('p', { class: 'head',
+      text: 'Sold for ' + dollars(res.sold) + ' ' + howLongAgo(res.months) + '.' }));
+
+    var ul = el('ul');
+    if (!res.changes.length)
+      ul.appendChild(el('li', {}, [el('span', { text: 'Almost identical to yours — nothing to change.' }),
+        el('span', { class: 'amt', text: '$0' })]));
+    res.changes.forEach(function (ch) {
+      ul.appendChild(el('li', {}, [
+        el('span', { text: ch.why }),
+        el('span', { class: 'amt ' + (ch.amt > 0 ? 'up' : 'down'), text: signed(ch.amt) })
+      ]));
+    });
+    card.appendChild(ul);
+    card.appendChild(el('div', { class: 'end' }, [
+      el('span', { text: 'Which points to' }), el('span', { text: dollars(res.adjusted) })
+    ]));
+    if (res.tooFar)
+      card.appendChild(el('div', { class: 'note warn', style: 'margin-top:10px',
+        text: 'Left out of the answer. We had to change it by ' + Math.round(res.movedPct * 100) +
+              '%, which means it is not really comparable to your house. Try to find a closer sale.' }));
+    host.appendChild(card);
+  });
+}
+
+function refresh() {
+  var r = work();
+  drawAnswer(r);
+  drawRentCheck(r);
+  drawWhy(r);
+  rememberLater();
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Buttons and setup
+   ───────────────────────────────────────────────────────────── */
+function drawRates() {
+  var host = $('#rateFields');
+  host.innerHTML = '';
+  function moneyBox(rateKey, label) {
+    var inp = el('input', { inputmode: 'decimal', value: rates[rateKey],
+      oninput: function (e) {
+        var v = numOf(e.target.value);
+        if (v != null) { rates[rateKey] = v; refresh(); }
+      } });
+    host.appendChild(el('label', { class: 'f' }, [el('span', { text: label }), inp]));
+  }
+  cls().fields.forEach(function (f) {
+    if (!f.rate || rates[f.rate] == null) return;
+    moneyBox(f.rate, f.rateLabel);
+  });
+  moneyBox('market', 'Prices are changing per year (%)');
+}
+
+function pasteRows(text) {
+  var lines = text.split(/\r?\n/).filter(function (l) { return l.trim(); });
+  var added = 0;
+  lines.forEach(function (line) {
+    var cells = line.indexOf('\t') >= 0 ? line.split('\t') : line.split(',');
+    cells = cells.map(function (s) { return s.replace(/^"|"$/g, '').trim(); });
+    if (cells.length < 2) return;
+    if (numOf(cells[1]) == null && dateOf(cells[2]) == null) return;   // heading row
+    var c = blankComp();
+    c.addr = cells[0] || '';
+    c.price = numOf(cells[1]);
+    c.dateText = cells[2] || '';
+    c.date = dateOf(cells[2]);
+    /* Everything after the date lines up with the boxes for this kind. */
+    cls().fields.forEach(function (f, i) { c[f.key] = numOf(cells[3 + i]); });
+    comps.push(c); added++;
+  });
+  return added;
+}
+
+/* One worked example per kind, so the buttons do something no matter
+   which one you are on. Order of the numbers matches that kind's boxes. */
+var EXAMPLES = {
+  residential: { addr: '1450 Maple Avenue', mine: [1850, 3, 2, 1, 1996, 2, 7000, 3], sales: [
+    ['124 Oak Street', 685000, 5, [1980, 3, 2, 1, 1998, 2, 7200, 3]],
+    ['87 Willow Court', 742000, 2, [2050, 4, 2, 1, 2004, 2, 7800, 4]],
+    ['1610 Maple Avenue', 638000, 9, [1720, 3, 2, 0, 1992, 2, 6600, 3]],
+    ['3390 Cedar Lane', 915000, 4, [2900, 5, 3, 1, 2015, 3, 12500, 5]]] },
+
+  office: { addr: '200 Commerce Plaza', mine: [12500, 2004, 40, 22000, 3, 240000], sales: [
+    ['88 Bridgeway', 2650000, 6, [13200, 2001, 44, 24000, 3, 262000]],
+    ['410 Warren Street', 2180000, 3, [11000, 2006, 30, 19500, 4, 214000]],
+    ['1500 Harbor Drive', 3400000, 10, [17800, 1998, 55, 31000, 3, 331000]]] },
+
+  retail: { addr: '77 Main Street', mine: [6400, 1998, 80, 25, 18000, 3, 185000], sales: [
+    ['15 Market Square', 1420000, 4, [6900, 1995, 90, 28, 19500, 3, 198000]],
+    ['300 Broad Street', 1180000, 7, [5600, 2002, 62, 20, 15000, 4, 156000]],
+    ['9 Union Avenue', 1650000, 2, [7800, 1990, 100, 34, 22000, 2, 210000]]] },
+
+  industrial: { addr: '4200 Foundry Road', mine: [48000, 2010, 28, 8, 96000, 3, 420000], sales: [
+    ['1100 Depot Way', 4300000, 5, [51000, 2012, 30, 10, 104000, 4, 468000]],
+    ['750 Ironside Court', 3250000, 8, [39500, 2004, 24, 6, 82000, 3, 340000]],
+    ['62 Kiln Street', 5100000, 3, [61000, 2016, 32, 12, 128000, 4, 553000]]] },
+
+  mixed: { addr: '18 Corner Street', mine: [9200, 6, 1974, 5400, 3, 310000], sales: [
+    ['44 Elm & Third', 1980000, 4, [9800, 6, 1968, 5900, 3, 328000]],
+    ['7 Station Road', 1540000, 9, [7400, 5, 1981, 4200, 4, 262000]],
+    ['221 Grand Avenue', 2410000, 2, [11500, 8, 1962, 6800, 2, 385000]]] },
+
+  land: { addr: 'Parcel 12, Ridge Road', mine: [43560, 150], sales: [
+    ['Lot 4, Ridge Road', 1050000, 6, [40000, 140]],
+    ['Parcel 9, Overlook', 1480000, 3, [61000, 210]],
+    ['Lot 22, Mill Creek', 720000, 11, [31000, 95]]] }
+};
+
+function loadExample() {
+  var ex = EXAMPLES[className];
+  if (!ex) return;
+  var fields = cls().fields;
+
+  $('#j_addr').value = ex.addr;
+  fields.forEach(function (f, i) {
+    var box = $('#j_' + f.key);
+    if (box && ex.mine[i] != null) box.value = ex.mine[i];
+  });
+
+  var now = new Date();
+  function back(months) {
+    var d = new Date(now.getFullYear(), now.getMonth() - months, 14);
+    return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+  }
+
+  comps = ex.sales.map(function (s) {
+    var c = blankComp();
+    c.addr = s[0]; c.price = s[1];
+    c.dateText = back(s[2]); c.date = dateOf(c.dateText);
+    fields.forEach(function (f, i) { if (s[3][i] != null) c[f.key] = s[3][i]; });
+    return c;
+  });
+  drawRows(); refresh();
+}
+
+function save(name, text, type) {
+  var b = new Blob([text], { type: type || 'text/plain' });
+  var u = URL.createObjectURL(b);
+  var a = el('a', { href: u, download: name });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(u); }, 800);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Keeping your work
+
+   Two safety nets. The browser quietly remembers what you typed,
+   so closing the tab by accident costs you nothing. And "Save to
+   a file" writes out a copy of this whole page with your numbers
+   tucked inside it — open that file later and everything is
+   still there. Neither one sends anything anywhere.
+   ───────────────────────────────────────────────────────────── */
+
+var MEMORY_KEY = 'comp-sheet-work';
+
+function snapshot() {
+  var house = { j_addr: $('#j_addr').value };
+  cls().fields.forEach(function (f) {
+    var box = $('#j_' + f.key);
+    house['j_' + f.key] = box ? box.value : '';
+  });
+  return {
+    version: 2,
+    savedAt: new Date().toISOString(),
+    kind: className,
+    house: house,
+    rates: rates,
+    comps: comps.map(function (c) {
+      var out = { addr: c.addr, price: c.price, dateText: c.dateText };
+      cls().fields.forEach(function (f) { out[f.key] = c[f.key]; });
+      return out;
+    })
+  };
+}
+
+function restore(data) {
+  if (!data || !data.house) return false;
+
+  if (data.kind && CLASSES[data.kind]) className = data.kind;
+  rates = startingRates();
+  if (data.rates) {
+    Object.keys(rates).forEach(function (k) {
+      if (typeof data.rates[k] === 'number') rates[k] = data.rates[k];
+    });
+  }
+  drawKinds(); drawSubject(); drawHead();
+
+  $('#j_addr').value = data.house.j_addr || '';
+  cls().fields.forEach(function (f) {
+    var box = $('#j_' + f.key);
+    if (box && data.house['j_' + f.key] != null) box.value = data.house['j_' + f.key];
+  });
+
+  comps = (data.comps || []).map(function (raw) {
+    var c = blankComp();
+    c.addr = raw.addr || ''; c.price = raw.price;
+    c.dateText = raw.dateText || ''; c.date = dateOf(c.dateText);
+    cls().fields.forEach(function (f) { if (raw[f.key] != null) c[f.key] = raw[f.key]; });
+    return c;
+  });
+  while (comps.length < 3) comps.push(blankComp());
+  drawRows(); drawRates(); refresh();
+  return true;
+}
+
+/* The browser's own memory. Blocked in some setups, so never assume it worked. */
+function remember() {
+  try { localStorage.setItem(MEMORY_KEY, JSON.stringify(snapshot())); return true; }
+  catch (e) { return false; }
+}
+function recall() {
+  try {
+    var s = localStorage.getItem(MEMORY_KEY);
+    return s ? JSON.parse(s) : null;
+  } catch (e) { return null; }
+}
+function forget() { try { localStorage.removeItem(MEMORY_KEY); } catch (e) {} }
+
+var rememberSoon = null;
+function rememberLater() {
+  clearTimeout(rememberSoon);
+  rememberSoon = setTimeout(function () {
+    if (hasAnything() && remember()) showSaveLine('remembered');
+  }, 500);
+}
+function hasAnything() {
+  var size = $('#j_' + cls().sizeKey);
+  return !!($('#j_addr').value.trim() || (size && size.value.trim()) ||
+    comps.some(function (c) { return c.addr || c.price; }));
+}
+
+function showSaveLine(mode) {
+  var n = $('#saveLine');
+  n.innerHTML = '';
+  if (mode === 'remembered') {
+    n.appendChild(el('span', { html: '<b>Kept safe.</b> This computer will remember your work if the tab closes. ' }));
+    n.appendChild(el('button', { class: 'link', onclick: function () {
+      forget(); showSaveLine('forgotten');
+    } }, ['Forget it']));
+  } else if (mode === 'forgotten') {
+    n.textContent = 'Forgotten. Nothing is being remembered now.';
+  } else if (mode === 'saved') {
+    n.innerHTML = '<b>Saved.</b> Open that file any time and everything will still be here.';
+  } else if (mode === 'nomemory') {
+    n.textContent = 'This browser will not let the page remember anything — use "Save to a file" so you do not lose your work.';
+  }
+}
+
+/* Write out a copy of this page with the numbers baked in. */
+function saveToFile() {
+  var copy = document.documentElement.cloneNode(true);
+  var pick = function (s) { return copy.querySelector(s); };
+
+  /* Strip everything the page builds on the fly — it gets rebuilt on open. */
+  pick('#rows').innerHTML = '';
+  pick('#sheetHead').innerHTML = '';
+  pick('#subjectFields').innerHTML = '';
+  pick('#rateFields').innerHTML = '';
+  pick('#kinds').innerHTML = '';
+  pick('#why').innerHTML = '';
+  pick('#reopened').innerHTML = '';
+  pick('#reopened').setAttribute('hidden', '');
+  pick('#rentCheck').innerHTML = '';
+  pick('#rentCheck').setAttribute('hidden', '');
+  pick('#saveLine').innerHTML = '';
+  pick('#j_addr').removeAttribute('value');
+  var ans = pick('#answer');
+  ans.className = 'answer empty';
+  ans.innerHTML = '<div class="lead">Suggested price</div>' +
+                  '<div class="big">Fill in the property and at least one sale below</div>';
+  pick('#pasteCard').setAttribute('hidden', '');
+  pick('#pasteBox').textContent = '';
+  Array.prototype.forEach.call(copy.querySelectorAll('details'), function (d) { d.removeAttribute('open'); });
+  var stale = pick('#saved-data');
+  if (stale) stale.parentNode.removeChild(stale);
+
+  /* Tuck the numbers in as plain text. Escaping "<" keeps a stray
+     address from closing the tag early. */
+  var tag = document.createElement('script');
+  tag.id = 'saved-data';
+  tag.type = 'application/json';
+  tag.textContent = JSON.stringify(snapshot()).replace(/</g, '\\u003c');
+  copy.querySelector('body').appendChild(tag);
+
+  var name = ($('#j_addr').value.trim() || 'comp sheet')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'comp-sheet';
+  save(name + '.html', '<!doctype html>\n' + copy.outerHTML, 'text/html;charset=utf-8');
+  showSaveLine('saved');
+}
+
+function showReopened(data) {
+  var box = $('#reopened');
+  var who = (data.house && data.house.j_addr) ? data.house.j_addr : 'your sheet';
+  var when = '';
+  if (data.savedAt) {
+    var d = new Date(data.savedAt);
+    if (isFinite(d.getTime())) when = ' from ' + d.toLocaleDateString() + ', ' +
+      d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+  box.innerHTML = '';
+  box.appendChild(el('span', { html: 'Picked up where you left off — <b>' + who + '</b>' + when + '.' }));
+  box.appendChild(el('button', { class: 'link', onclick: function () {
+    box.hidden = true;
+  } }, ['Got it']));
+  box.hidden = false;
+}
+
+function start() {
+  drawKinds();
+  drawSubject();
+  drawHead();
+  for (var i = 0; i < 3; i++) comps.push(blankComp());
+  drawRows();
+  drawRates();
+
+  /* Numbers saved inside this very file win. Otherwise fall back to
+     whatever the browser remembered from last time. */
+  var baked = document.getElementById('saved-data');
+  var reopenedFrom = null;
+  if (baked) {
+    try {
+      var fromFile = JSON.parse(baked.textContent);
+      if (restore(fromFile)) reopenedFrom = fromFile;
+    } catch (e) { /* a damaged file just opens blank */ }
+  }
+  if (!reopenedFrom) {
+    var fromMemory = recall();
+    if (fromMemory && restore(fromMemory)) reopenedFrom = fromMemory;
+  }
+  if (reopenedFrom) showReopened(reopenedFrom);
+
+  $('#j_addr').addEventListener('input', refresh);
+
+  $('#btnAdd').addEventListener('click', function () { comps.push(blankComp()); drawRows(); refresh(); });
+  $('#btnExample').addEventListener('click', loadExample);
+  $('#btnPrint').addEventListener('click', function () { window.print(); });
+  $('#btnSave').addEventListener('click', saveToFile);
+  $('#btnClear').addEventListener('click', function () {
+    if (!confirm('Clear everything and start over?\n\nAnything this computer remembered will be forgotten too.')) return;
+    $('#j_addr').value = '';
+    drawSubject();
+    comps = [blankComp(), blankComp(), blankComp()];
+    forget();
+    $('#reopened').hidden = true;
+    $('#saveLine').innerHTML = '';
+    drawRows(); refresh();
+  });
+
+  $('#btnPaste').addEventListener('click', function () {
+    $('#pasteCard').hidden = false; $('#pasteBox').focus();
+  });
+  $('#btnPasteCancel').addEventListener('click', function () { $('#pasteCard').hidden = true; });
+  $('#btnPasteGo').addEventListener('click', function () {
+    var n = pasteRows($('#pasteBox').value);
+    if (!n) { alert('Nothing there looked like a sale. Check that the address is first and the price is second.'); return; }
+    comps = comps.filter(function (c) { return c.price != null || c.addr; });
+    $('#pasteBox').value = ''; $('#pasteCard').hidden = true;
+    drawRows(); refresh();
+  });
+
+  /* Opening the file straight off the disk sometimes blocks the browser's
+     memory. Better to say so than to let someone lose an afternoon. */
+  var canRemember = true;
+  try { localStorage.setItem('comp-sheet-test', '1'); localStorage.removeItem('comp-sheet-test'); }
+  catch (e) { canRemember = false; }
+  if (!canRemember) showSaveLine('nomemory');
+
+  $('#btnResetRates').addEventListener('click', function () { rates = startingRates(); drawRates(); refresh(); });
+  $('#btnSaveRates').addEventListener('click', function () {
+    save('comp-sheet-amounts.json', JSON.stringify(rates, null, 2), 'application/json');
+  });
+  $('#btnLoadRates').addEventListener('click', function () { $('#ratesFile').click(); });
+  $('#ratesFile').addEventListener('change', function (e) {
+    var f = e.target.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      try {
+        var got = JSON.parse(fr.result);
+        Object.keys(startingRates()).forEach(function (k) {
+          if (typeof got[k] === 'number') rates[k] = got[k];
+        });
+        drawRates(); refresh();
+      } catch (err) { alert('That file did not look right.'); }
+    };
+    fr.readAsText(f);
+    e.target.value = '';
+  });
+
+  refresh();
+}
+
+start();
+</script>
+</body>
+</html>
