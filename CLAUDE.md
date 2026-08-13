@@ -256,3 +256,16 @@ Dates are typed by hand and there is no date picker.
 
 The supplied adjustment rates are national estimates and are considerably weaker
 for the commercial types than for residential.
+
+## Commit messages
+
+Write them the way the owner writes them. One line, starting with the date, then
+plainly what was done, joined with commas and "and".
+
+    July 16, worked through exercises 1 through 4 in arrays and completed all housekeeping
+    August 13, gitignored commands.md and corrected a decision claude made on my behalf
+
+Lower case after the date. No title case, no colons splitting a subject from a
+description, no semicolons, and no multi paragraph body explaining the reasoning.
+The reasoning goes in DECISIONS.md if it is a decision, or LOG.md if it is
+something learned. The commit message says what changed and nothing else.
